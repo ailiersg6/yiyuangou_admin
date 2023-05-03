@@ -54,6 +54,7 @@ export async function bottest1() {
 
 
     console.log('d', d);
+    return d
     // verifyTransactionExistance()
 }
 
