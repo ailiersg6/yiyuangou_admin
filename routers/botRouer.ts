@@ -1,6 +1,8 @@
 import fastify, { FastifyInstance } from 'fastify'
 import { bottest1 } from '../bot/ton'
 import { test1 } from '../controller/test'
+
+
 export const routes = async (fastify: FastifyInstance) => {
     
     fastify.get('/', async (request, reply) => {
@@ -18,5 +20,7 @@ export const routes = async (fastify: FastifyInstance) => {
         let obj = test1(request, reply)
         reply.send(obj)
     })
+   
 }
+
 
