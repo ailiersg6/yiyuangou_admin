@@ -1,4 +1,5 @@
 import { Address, HttpApi, fromNano, toNano } from "ton";
+import {} from './index'
 
 /*** 
 *  获取合约中的转入交易
@@ -49,12 +50,12 @@ export function generatePaymentLink(toWallet:Address, amount:bigint, comment:any
   }
 
 export async function bottest1() {
-    let address = Address.parse(process.env.OWNER_WALLET!)
-    let d = await verifyTransactionExistance(address, 100,true)
+    // let address = Address.parse(process.env.OWNER_WALLET!)
+    // let d = await verifyTransactionExistance(address, 100,true)
 
 
-    console.log('d', d);
-    return d
+    // console.log('d', d);
+    // return d
     // verifyTransactionExistance()
 }
 
