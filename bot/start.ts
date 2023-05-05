@@ -1,4 +1,4 @@
-import { InlineKeyboard } from "grammy";
+import { Bot, InlineKeyboard } from "grammy";
 import { MyContext, MyConversation } from ".";
 import { Address } from "ton";
 import { isTONAddress } from "./ton";
@@ -28,11 +28,26 @@ export default async function handleStart(conversation: MyConversation, ctx: MyC
     address = await conversation.form.text();
     console.log('no',address)
   }while(!isTONAddress(address))
-  // 绑定地址
-  ctx.reply(`
-  恭喜绑定ton地址成功！
-ton地址：${address}
-  `)
+  // 绑定地址 
+  let userid=await ctx.getChat()
+  
+  conversation.log(userid)
+  
+  // bind(userid,address,info)
+ // const response = await conversation.external(() => bind(userid,address,info));
+//  if(response){
+//   ctx.reply(`
+//   恭喜绑定ton地址成功！
+// ton地址：${address}
+//   `)
+//  }else{
+//   ctx.reply(`
+//   该ton地址已经被绑定，请重新绑定.
+// 或者联系管理员协调处理
+//   `)
+//  }
+  return
+
   return
 
   if (isTONAddress(address)) {
