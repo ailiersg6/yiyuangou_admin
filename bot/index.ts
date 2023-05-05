@@ -7,33 +7,16 @@ import {
   createConversation,
 } from "@grammyjs/conversations";
 import handleStart from "./start";
+import { Menu } from "@grammyjs/menu";
+export type MyContext = Context & ConversationFlavor;
+export type MyConversation = Conversation<MyContext>;
 
-type MyContext = Context & ConversationFlavor;
-type MyConversation = Conversation<MyContext>;
-
-async function greeting(conversation: MyConversation, ctx: MyContext) {
-  // TODO: 编写对话
-}
-async function movie(conversation: MyConversation, ctx: MyContext) {
-  await ctx.reply("你有多少部最喜欢的电影？");
-  const count = await conversation.form.number();
-  const movies: string[] = [];
-  for (let i = 0; i < count; i++) {
-    await ctx.reply(`告诉我第 ${i + 1} 名！`);
-    const titleCtx = await conversation.waitFor(":text");
-    movies.push(titleCtx.msg.text);
-  }
-  await ctx.reply("这里有一个更好的排名！");
-  movies.sort();
-  await ctx.reply(movies.map((m, i) => `${i + 1}. ${m}`).join("\n"));
-}
 
 export async function initBot() {
   try {
-
     const bot = new Bot(process.env.BOT_TOKEN!, {
       client: {
-        timeoutSeconds: 5,
+        timeoutSeconds: 60,
         sensitiveLogs: true
       }
     });
@@ -46,20 +29,45 @@ export async function initBot() {
     }) as any);
 
     // 安装对话插件。
-    bot.use((conversations()) as MiddlewareFn );
-    bot.use((createConversation(movie)) as Middleware<Context>);
+    bot.use((conversations()) as MiddlewareFn);
+    bot.use((createConversation(handleStart)) as Middleware<Context>);
 
     console.log("BOT_TOKEN", process.env.BOT_TOKEN)
 
+
+    // 创建一个简单的菜单。
+    const menu = new Menu("my-menu-identifier")
+      .text("A", (ctx) => ctx.reply("You pressed A!")).row()
+      .text("B", (ctx) => ctx.reply("You pressed B!"));
+    bot.use(menu);
+
+
     // 处理 /start 命令。
-    bot.command("start", async (ctx:any) => {
-      await ctx.conversation.enter("movie");
+    bot.command("start", async (ctx: any) => {
+
+      await ctx.conversation.enter("handleStart");
     });
+    bot.command("menu", async (ctx) => {
+      // 发送菜单。
+      await ctx.reply("Check out this menu:", { reply_markup: menu });
+    });
+
+    bot.command("balance", async (ctx) => {
+      // 发送菜单。
+      await ctx.reply("balance");
+    });
+
     // 处理其他的消息。
     bot.on("message", (ctx) => {
-      console.log('msg', ctx.message)
+      console.log('msg', ctx.message.text)
       ctx.reply("Got another message!")
     });
+
+    // 文本输入栏中显示建议的命令列表。
+    await bot.api.setMyCommands([
+      { command: "start", description: "开始" },
+      { command: "balance", description: "余额" },
+    ]);
 
 
     // 错误处理
@@ -78,10 +86,9 @@ export async function initBot() {
 
 
     bot.start({
-      timeout: 10
+      timeout: 60
     });
 
-    console.log("bot.api.getMe()", await bot.api.getMyCommands())
   } catch (error) {
     console.log('error', error)
   }
