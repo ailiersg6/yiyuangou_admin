@@ -22,18 +22,19 @@ export default async function handleStart(conversation: MyConversation, ctx: MyC
 5、机器人说明更新一下 不支持交易所直接绑定和充值 <a href="http://bitpie.com/">bitpie.com</a> 下载比特派钱包充值
 `, { parse_mode: "HTML" });
 
-// 让用户输入地址 如果输入错误 就循环输入 直到正确为止
+// 让用户输入地址 如果输入错误 就循环输入 直到正确为止 最大循环2次
   let address;
+  let i=0;
   do {
     address = await conversation.form.text();
-    console.log('no',address)
-  }while(!isTONAddress(address))
+    i ++;
+  }while(!isTONAddress(address) && i<1)
   // 绑定地址 
-  let userid=await ctx.getChat()
+  let userInfo=await ctx.getChat()
+  // let obj1=await ctx.getChat()
+  // conversation.log(userInfo,obj1)
   
-  conversation.log(userid)
-  
-  // bind(userid,address,info)
+
  // const response = await conversation.external(() => bind(userid,address,info));
 //  if(response){
 //   ctx.reply(`
@@ -48,7 +49,6 @@ export default async function handleStart(conversation: MyConversation, ctx: MyC
 //  }
   return
 
-  return
 
   if (isTONAddress(address)) {
 
@@ -66,4 +66,5 @@ export default async function handleStart(conversation: MyConversation, ctx: MyC
   // await ctx.reply("这里有一个更好的排名！");
   // movies.sort();
   // await ctx.reply(movies.map((m, i) => `${i + 1}. ${m}`).join("\n"));
+
 }

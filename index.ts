@@ -17,6 +17,14 @@ console.log('当前环境=>',process.env.NETWORK);
 
 
 const server = fastify()
+server.setErrorHandler((error, request, reply) => {
+  // 记录错误信息
+  console.error(error);
+
+  // 返回一个友好的错误响应
+  reply.status(500).send({ error: 'Internal Server Error' });
+  
+});
 
 // initBot() // 初始化机器人
 

@@ -4,12 +4,12 @@ import { } from './index'
 /*** 
 *  获取合约中的转入交易
  * @toWallet Address 合约地址
- * @limit number 返回的记录数
+ * @limit number 返回的记录数 默认100
  * @filterSend bool 是否过滤传入交易， true：过滤出转入交易 false：不过滤 返回全部，默认false
  * @returns Promise<InvestReturnObj>
 */
 
-export async function getTransactions(toWallet: Address, limit: number, filterIncome?: boolean) {
+export async function getTransactions(toWallet: Address, limit: number = 100, filterIncome: boolean = false) {
   const endpoint =
     process.env.NETWORK === "mainnet"
       ? "https://toncenter.com/api/v2/jsonRPC"
@@ -17,7 +17,6 @@ export async function getTransactions(toWallet: Address, limit: number, filterIn
   let httpClient = new HttpApi(
     endpoint,
     { apiKey: process.env.TONCENTER_TOKEN }
-
   )
   // 钱包中获取最近 x 笔交易
   const transactions = await httpClient.getTransactions(toWallet, {
@@ -64,3 +63,4 @@ export function isTONAddress(str: string) {
   }
 
 }
+
