@@ -8,6 +8,7 @@ import {
 } from "@grammyjs/conversations";
 import handleStart from "./start";
 import { Menu } from "@grammyjs/menu";
+import { type } from "os";
 export type MyContext = Context & ConversationFlavor;
 export type MyConversation = Conversation<MyContext>;
 
@@ -20,9 +21,7 @@ const menu = new Menu("my-menu-identifier")
   .text("提现", (ctx) => ctx.reply("You pressed B!"));
 
 
-// 安装菜单
 
-// bot.start()
 let bot: Bot;
 
 export async function initBot() {
@@ -63,9 +62,19 @@ export async function initBot() {
 
 
     bot.command("balance", async (ctx) => {
-      // 发送菜单。
+      // 查询余额
       await ctx.reply("balance");
     });
+
+     // 内联键盘
+     const markup = {
+      inline_keyboard: [
+        [
+          { text: '充值', url: 'https://t.me/yiyuangou2_bot' },
+          { text: '提现', url: 'https://t.me/yiyuangou2_bot' }
+        ]
+      ]
+    };
 
     // 处理其他的消息。
     bot.on("message", async (ctx) => {
@@ -79,7 +88,7 @@ export async function initBot() {
          // 发送开奖信息
           ctx.reply(`
          开奖成功！当前 100 USDT a场
-          当前游戏期号: 1683273334 期
+      当前游戏期号: 1683273334 期
           中奖号码: 57 
           中奖用户: 系统中奖 
           超时60s 系统自动开奖
@@ -92,7 +101,7 @@ export async function initBot() {
           开奖滞后: 1034 毫秒
           ton区块块高: 50886634
           ton区块哈希: 00000000030877ead3eb67b1230d4a9b191a41c14bdc1d0ebffeb156322345f7
-                   `, { reply_markup: menu });
+                   `, { reply_markup: markup });
             }
           }
  
@@ -157,6 +166,8 @@ export function sendUserMsgByBot(chat_id: any, msg: string) {
   }
 }
 
+
+
 /**
  * 通过bot群发送开奖广播 带充值和提现按钮
  * @param chat_id
@@ -164,14 +175,27 @@ export function sendUserMsgByBot(chat_id: any, msg: string) {
  */
 export function sendWinMsgByBot(msg: string) {
   try {
-    // 先用这个机器人发送 类似 "A70" 之类的消息 在群里 
-    // 机器人收到这个消息 执行命令广播开奖信息和菜单
-    // 这个函数的机器人只负责触发 但有可能机器人无法触发 只能由真实用户触发
-    // 因为api.sendMessage命令主动发消息无法带菜单
+   
+    // 内联键盘
+    const markup = {
+      inline_keyboard: [
+        [
+          { text: '充值', url: 'https://t.me/yiyuangou2_bot' },
+          { text: '提现', url: 'https://t.me/yiyuangou2_bot' }
+        ]
+      ]
+    };
+
+    let bot = new Bot(process.env.BOT_TOKEN!, {
+      client: {
+        timeoutSeconds: 60,  
+        sensitiveLogs: true
+      }
+    });
     if (gropId == 0) {
       console.log("发送不成功 群组id =",gropId)
     } else {
-      bot.api.sendMessage(gropId, msg)
+      bot.api.sendMessage(gropId, msg,{ reply_markup: markup })
     }
 
 
