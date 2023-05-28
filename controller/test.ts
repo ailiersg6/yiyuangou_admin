@@ -307,25 +307,31 @@ export async function product(request: any, reply: FastifyReply) {
             notNull: false,
         }, {
             key: 'productValue',
-            val: request.productValue,
+            val: request.body.productValue,
             isMust: false,
             notNull: false,
         },
         {
             key: 'productP',
-            val: request.productP,
+            val: request.body.productP,
             isMust: false,
             notNull: false,
         },
         {
             key: 'productLimit',
-            val: request.productLimit,
+            val: request.body.productLimit,
             isMust: false,
             notNull: false,
         },
         {
             key: 'wintime',
-            val: request.wintime,
+            val: request.body.wintime,
+            isMust: false,
+            notNull: false,
+        },
+        {
+            key: 'open',
+            val: request.body.open,
             isMust: false,
             notNull: false,
         }
@@ -342,7 +348,7 @@ export async function product(request: any, reply: FastifyReply) {
         },
     }
     )
-
+   
 
     if (!queryResult.error) {
         let data = {
@@ -357,9 +363,10 @@ export async function product(request: any, reply: FastifyReply) {
             msg: queryResult.msg
         }
         // res.status(500).json(data)
+
     }
-
-
+    let obj1 = { rows:queryResult.rows , msg:"修改成功"}
+    return obj1
 }
 // 查询产品
 export async function product1(request: FastifyRequest, reply: FastifyReply) {
@@ -374,6 +381,11 @@ export async function login(request: FastifyRequest, reply: FastifyReply) {
     //  myQuery.close() // 释放连接
      console.log(data)
     return data
+}
+// 开启抢单接口
+export async function open(request: FastifyRequest, reply: FastifyReply) {
+    // 调用机器人
+    return 11
 }
 export async function delete_(request: FastifyRequest, reply: FastifyReply) {
 
