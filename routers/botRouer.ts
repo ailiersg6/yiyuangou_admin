@@ -11,13 +11,13 @@ export const routes = async (fastify: FastifyInstance) => {
     fastify.get('/ping', async (request, reply) => {
         return 'pong\n'
     })
-
+    
     fastify.get('/test/:userId', (request, reply) => {
         // http://127.0.0.1:8080/test/123 => {"userId":"123"}
         let obj = test1(request, reply)
         reply.send(obj)
     })
-    fastify.get('/bot/sendWin', (request, reply) => {
+    fastify.get('/bot/s1endWin', (request, reply) => {
         // http://127.0.0.1:8080/test/123 => {"userId":"123"}
         sendWinMsgByBot(`
     开奖成功！当前 100 USDT a场
