@@ -1,6 +1,7 @@
 import fastify from 'fastify'
 import { test1 } from './controller/test'
 import { routes } from './routers/botRouer'
+import { routes1 } from './routers/apiRouter'
 import {initBot} from './bot/index'
 import { Bot, webhookCallback } from 'grammy'
 
@@ -31,7 +32,7 @@ initBot() // 初始化机器人
 
 
 server.register(routes)
-
+server.register(routes1)
 server.listen({ port: 8080,host:"0.0.0.0" }, (err, address) => {
     if (err) {
         console.error(err)

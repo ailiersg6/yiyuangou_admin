@@ -29,7 +29,6 @@ export async function getTransactions(toWallet: Address, limit: number = 100, fi
     incomingTransactions = transactions.filter(
       (tx) => Object.keys(tx.out_msgs).length === 0
     );
-
   }
   return incomingTransactions
 
