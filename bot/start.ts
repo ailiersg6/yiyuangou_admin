@@ -22,40 +22,40 @@ export default async function handleStart(conversation: MyConversation, ctx: MyC
 5、机器人说明更新一下 不支持交易所直接绑定和充值 <a href="http://bitpie.com/">bitpie.com</a> 下载比特派钱包充值
 `, { parse_mode: "HTML" });
 
-// 让用户输入地址 如果输入错误 就循环输入 直到正确为止 最大循环2次
-  let address;
-  let i=0;
+  // 让用户输入地址 如果输入错误 就循环输入 直到正确为止 最大循环2次
+  let address = "";
+  let i = 0;
   do {
     address = await conversation.form.text();
-    i ++;
-  }while(!isTONAddress(address) && i<1)
+    i++;
+  } while (!isTONAddress(address) && i < 1)
   // 绑定地址 
-  let userInfo=await ctx.getChat()
+  let userInfo = await ctx.getChat()
   // let obj1=await ctx.getChat()
   // conversation.log(userInfo,obj1)
-  
 
- // const response = await conversation.external(() => bind(userid,address,info));
-//  if(response){
-//   ctx.reply(`
+
+//   const response = await conversation.external(() => bind(userid, address, info));
+//   if (response) {
+//     ctx.reply(`
 //   恭喜绑定ton地址成功！
 // ton地址：${address}
 //   `)
-//  }else{
-//   ctx.reply(`
+//   } else {
+//     ctx.reply(`
 //   该ton地址已经被绑定，请重新绑定.
 // 或者联系管理员协调处理
 //   `)
-//  }
+//   }
   return
 
 
-  if (isTONAddress(address)) {
+  // if (isTONAddress(address)) {
 
-    await ctx.reply("是地址")
-  } else {
-    await ctx.reply("不是地址")
-  }
+  //   await ctx.reply("是地址")
+  // } else {
+  //   await ctx.reply("不是地址")
+  // }
 
   // const movies: string[] = [];
   // for (let i = 0; i < 1; i++) {

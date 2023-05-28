@@ -51,7 +51,7 @@ export async function initBot() {
 
     // 安装菜单
     bot.use(menu);
- 
+
 
 
     // 处理 /start 命令。
@@ -60,18 +60,25 @@ export async function initBot() {
       await ctx.conversation.enter("handleStart");
     });
 
+    // 处理 /withdrawal 提现 命令。
+    // bot.command("withdrawal", async (ctx: any) => {
+
+    //   await ctx.conversation.enter("withdrawal");
+    // });
+
 
     bot.command("balance", async (ctx) => {
       // 查询余额
       await ctx.reply("balance");
     });
 
-     // 内联键盘
-     const markup = {
+    // 内联键盘
+    const markup = {
       inline_keyboard: [
         [
-          { text: '充值', url: 'https://t.me/yiyuangou2_bot' },
-          { text: '提现', url: 'https://t.me/yiyuangou2_bot' }
+          //process.env
+          { text: '开始', url: `https://t.me/${process.env.BOT_NAME}` },
+          // { text: '提现', url: `https://t.me/${process.env}` }
         ]
       ]
     };
@@ -82,11 +89,11 @@ export async function initBot() {
         // 消息来自组
         console.log("当前消息来自组", ctx.message.chat.id)
         gropId = ctx.message.chat.id
-        if(ctx.message["text"]){
+        if (ctx.message["text"]) {
           const myRegex = /^[A-Z]\d{2}$/; // 匹配 A-Z 开头的 3 位字符串，第二三位为数字
-          if(myRegex.test(ctx.message.text)){
-         // 发送开奖信息
-          ctx.reply(`
+          if (myRegex.test(ctx.message.text)) {
+            // 发送开奖信息
+            ctx.reply(`
          开奖成功！当前 100 USDT a场
       当前游戏期号: 1683273334 期
           中奖号码: 57 
@@ -102,19 +109,20 @@ export async function initBot() {
           ton区块块高: 50886634
           ton区块哈希: 00000000030877ead3eb67b1230d4a9b191a41c14bdc1d0ebffeb156322345f7
                    `, { reply_markup: markup });
-            }
           }
- 
+        }
+
         // sendWinMsgByBot(gropId,"开奖信息") 
-        
+
       }
       console.log('msg', ctx.message)
     });
 
-    // 文本输入栏中显示建议的命令列表。
+    // 文本输入栏中显示建议的命令列表。 命令名称必须消息开头
     await bot.api.setMyCommands([
       { command: "start", description: "开始" },
-      { command: "balance", description: "余额" },
+      // { command: "balance", description: "余额" },
+      // { command: "withdrawal", description: "提现" },
     ]);
 
 
@@ -152,7 +160,7 @@ export async function initBot() {
  * @param chat_id
  * @param 消息文本
  */
-export function sendUserMsgByBot(chat_id: any, msg: string) {
+export async function sendUserMsgByBot(chat_id: any, msg: string) {
   try {
     const bot = new Bot(process.env.BOT_TOKEN!, {
       client: {
@@ -160,7 +168,8 @@ export function sendUserMsgByBot(chat_id: any, msg: string) {
         sensitiveLogs: true
       }
     });
-    bot.api.sendMessage(chat_id, msg)
+  await  bot.api.sendMessage(chat_id, msg)
+  return new Date()
   } catch (error) {
     console.log("sendUserMsgByBot", error)
   }
@@ -169,33 +178,34 @@ export function sendUserMsgByBot(chat_id: any, msg: string) {
 
 
 /**
- * 通过bot群发送开奖广播 带充值和提现按钮
+ * 通过bot群发送开奖广播 带按钮
  * @param chat_id
  * @param 消息文本
  */
-export function sendWinMsgByBot(msg: string) {
+export async function sendWinMsgByBot(msg: string) {
   try {
-   
+
     // 内联键盘
     const markup = {
       inline_keyboard: [
         [
-          { text: '充值', url: 'https://t.me/yiyuangou2_bot' },
-          { text: '提现', url: 'https://t.me/yiyuangou2_bot' }
+          { text: '参与', url: `https://t.me/${process.env.BOT_NAME}` },
+          // { text: '提现', url: 'https://t.me/yiyuangou2_bot' }
         ]
       ]
     };
 
     let bot = new Bot(process.env.BOT_TOKEN!, {
       client: {
-        timeoutSeconds: 60,  
+        timeoutSeconds: 60,
         sensitiveLogs: true
       }
     });
     if (gropId == 0) {
-      console.log("发送不成功 群组id =",gropId)
+      console.log("发送不成功 群组id =", gropId)
     } else {
-      bot.api.sendMessage(gropId, msg,{ reply_markup: markup })
+    await  bot.api.sendMessage(gropId, msg, { reply_markup: markup })
+    return new Date()
     }
 
 
