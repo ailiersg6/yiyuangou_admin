@@ -331,11 +331,6 @@ export async function product(request: any, reply: FastifyReply) {
             val: request.body.productValue,
             isMust: false,
             notNull: false,
-        }, {
-            key: 'productN',
-            val: request.body.productN,
-            isMust: false,
-            notNull: false,
         },
         {
             key: 'productP',
