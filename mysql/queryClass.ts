@@ -103,10 +103,10 @@ export class queryClass {
 }
 
 let myQuery = new queryClass({
-    host: 'localhost',
-    user: 'root',
-    database: 'test',
-    password: "123456",
+    host: '103.56.115.196',
+    user: 'ton',
+    database: 'ton',
+    password: "ZhBFKWyJA52Wm2Hj",
     waitForConnections: true, //连接超额是否等待
     connectionLimit: 10, //一次创建的最大连接数
     queueLimit: 0 //可以等待的连接的个数

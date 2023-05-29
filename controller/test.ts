@@ -312,6 +312,12 @@ export async function product(request: any, reply: FastifyReply) {
             notNull: false,
         },
         {
+            key: 'productN',
+            val: request.body.productN,
+            isMust: false,
+            notNull: false,
+        },
+        {
             key: 'productP',
             val: request.body.productP,
             isMust: false,
