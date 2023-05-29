@@ -296,20 +296,20 @@ export async function bind(userid: number, address: string, info: any) {
     )
     console.log(sqlStr, parameterData, queryResult) // 打印看看就懂
 
-    // if (!queryResult.error) {
-    //     let data = {
-    //         code: 200,
-    //         data: queryResult.rows
-    //     }
-    //     // res.json(data)
-    // } else {
-    //     let data = {
-    //         code: 500,
-    //         data: null,
-    //         msg: queryResult.msg
-    //     }
-    //     // res.status(500).json(data)
-    // }
+    if (!queryResult.error) {
+        let data = {
+            code: 200,
+            data: queryResult.rows
+        }
+        // res.json(data)
+    } else {
+        let data = {
+            code: 500,
+            data: null,
+            msg: queryResult.msg
+        }
+        // res.status(500).json(data)
+    }
 }
 // 修改产品
 export async function product(request: any, reply: FastifyReply) {

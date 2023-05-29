@@ -11,13 +11,13 @@ export const routes1 = async (fastify: FastifyInstance) => {
         reply.send(obj)
         // return {...obj}
     })
-    // 充值接口
+    // 充值接口待完善
     fastify.post('/add', async (request, reply) => {
         let obj = await inster1(request, reply)
         console.log(obj)
         reply.send(obj)
     })
-    // 参与记录函数
+    // 参与记录函数待完善
     fastify.post('/add1', async (request, reply) => {
         let obj = await inster2(request, reply)
         console.log(obj)
