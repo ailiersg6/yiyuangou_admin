@@ -228,6 +228,7 @@ export async function inster1(request: FastifyRequest, reply: FastifyReply) {
     // //  myQuery.close() // 释放连接
     //  console.log(data)
     let data = await  myQuery.query("SELECT * FROM set1 WHERE id= ? ",[1])
+    
     console.log(data.rows[0].open,3211)
     if( data.rows[0].open==0 ){
         let obj = "抢单未开启"
