@@ -74,17 +74,17 @@ export async function test1(request: FastifyRequest, reply: FastifyReply) {
 async function Hander(request:any) {
     return new Promise(async (resolve) => {
         // 查询有效次数
-        let data1 = await myQuery.query("SELECT * FROM set WHERE id= ? ", [1])
+        let data1 = await myQuery.query("SELECT * FROM set1 WHERE id= ? ", [1])
         // 有效次数
         let a = data1.rows[0].productN
         // 间隔时间
         let b = data1.rows[0].wintime
+        console.log(data1.rows[0].issue, 'data1.rows[0].issue')
         setTimeout(async () => {
             // 1原生方式
-            let data = await myQuery.query("SELECT * FROM adds WHERE issue= ? ", [(request.params as any).id])
+            let data = await myQuery.query("SELECT * FROM adds WHERE issue= ? ", [data1.rows[0].issue])
             //  myQuery.close() // 释放连接
-            console.log(data, 11, data.rows)
-
+            // console.log(data, 22, data.rows)
             let rows: any = data.rows
             if (a == rows.length) {
                 for (let i = 0; i < rows.length; i++) {
@@ -102,31 +102,37 @@ async function Hander(request:any) {
                     return b.newHashNub - a.newHashNub
                 })
                 // 调用机器人开奖
+                console.log(rows)
                 resolve(true)
             } if (a > rows.length) {
                 resolve(false)
             }
-        }, b * 60000);
+        }, b * 6000);
     })
 }
 export async function rewarded(request: FastifyRequest, reply: FastifyReply) {
+  return new Promise(async (resolve)=>{
 
-    // diankai
-    let time = new Date() // 开始时间
-    let endtime = new Date() // 结束时间
-    let max = 10;
-    for (let i = 0; i < max; i++) {
-           let isok = await Hander(request)
-           if(isok){
-            // 开奖完成
-            break;
-           }
-           else{
-             max++
-           }
-       
-    }
+ // diankai
+ let time = new Date() // 开始时间
+ let endtime = new Date() // 结束时间
+ let max = 10;
+ 
+ for (let i = 0; i < max; i++) {
+        let isok = await Hander(request)
+        if(isok){
+         // 开奖完成
+         resolve(true)
+         break;
+        }
+        else{
+          max++
+        }
+    
+ }
 
+  })
+   
 
 
     // return data
@@ -258,7 +264,6 @@ export async function inster1(request: FastifyRequest, reply: FastifyReply) {
     }
     
 
-
 }
 // 参与记录接口
 export async function inster2(request: FastifyRequest, reply: FastifyReply) {
@@ -267,6 +272,8 @@ export async function inster2(request: FastifyRequest, reply: FastifyReply) {
      console.log(data)
      return data
 }
+
+
 // 查询充值接口
 export async function inster3(request: FastifyRequest, reply: FastifyReply) {
     let data = await  myQuery.query("SELECT * FROM adds",[]) 
@@ -305,20 +312,20 @@ export async function bind(userid: number, address: string, info: any) {
     )
     console.log(sqlStr, parameterData, queryResult) // 打印看看就懂
 
-    // if (!queryResult.error) {
-    //     let data = {
-    //         code: 200,
-    //         data: queryResult.rows
-    //     }
-    //     // res.json(data)
-    // } else {
-    //     let data = {
-    //         code: 500,
-    //         data: null,
-    //         msg: queryResult.msg
-    //     }
-    //     // res.status(500).json(data)
-    // }
+    if (!queryResult.error) {
+        let data = {
+            code: 200,
+            data: queryResult.rows
+        }
+        // res.json(data)
+    } else {
+        let data = {
+            code: 500,
+            data: null,
+            msg: queryResult.msg
+        }
+        // res.status(500).json(data)
+    }
 }
 // 修改产品
 export async function product(request: any, reply: FastifyReply) {
@@ -390,7 +397,7 @@ export async function product(request: any, reply: FastifyReply) {
         },
     }
     )
-   
+   console.log('sqlStr111',sqlStr)
 
     if (!queryResult.error) {
         let data = {
