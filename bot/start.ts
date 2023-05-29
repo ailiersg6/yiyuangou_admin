@@ -2,6 +2,7 @@ import { Bot, InlineKeyboard } from "grammy";
 import { MyContext, MyConversation } from ".";
 import { Address } from "ton";
 import { isTONAddress } from "./ton";
+import { bind } from "../controller/test";
 
 export default async function handleStart(conversation: MyConversation, ctx: MyContext) {
   await ctx.reply(`
@@ -27,44 +28,58 @@ export default async function handleStart(conversation: MyConversation, ctx: MyC
   let i = 0;
   do {
     address = await conversation.form.text();
+
+    if(!isTONAddress(address)){
+      ctx.reply(`地址格式不正确`)
+    }
+ 
     i++;
-  } while (!isTONAddress(address) && i < 1)
+  } while (!isTONAddress(address) && i < 2)
+  if(!isTONAddress(address)){
+    setTimeout(() => {
+      ctx.reply(`多次输入错误地址 请重新尝试`)
+    }, 1000);
+   
+   return
+  }
+   // 发送等待提示
+  await ctx.replyWithChatAction('typing'); 
   // 绑定地址 
   let userInfo = await ctx.getChat()
   // let obj1=await ctx.getChat()
-  // conversation.log(userInfo,obj1)
+  conversation.log('userInfo',userInfo)
 
 
-//   const response = await conversation.external(() => bind(userid, address, info));
-//   if (response) {
-//     ctx.reply(`
-//   恭喜绑定ton地址成功！
-// ton地址：${address}
-//   `)
-//   } else {
-//     ctx.reply(`
-//   该ton地址已经被绑定，请重新绑定.
-// 或者联系管理员协调处理
-//   `)
-//   }
+  const response: any = await conversation.external(async () => await bind(userInfo.id, address, JSON.stringify(userInfo)));
+  console.log('response', response)
+  if (response && response.error) {
+    if (response.sqlMessage.indexOf('Duplicate') != -1) {
+      // Duplicate
+      ctx.reply(`
+       该ton地址已经被绑定.
+  `)
+    }
+  }else{
+    ctx.reply(`
+    恭喜绑定ton地址成功！
+  ton地址：${address}
+    `)
+  }
+
+  //   if (response) {
+  //     ctx.reply(`
+  //   恭喜绑定ton地址成功！
+  // ton地址：${address}
+  //   `)
+  //   } else {
+  //     ctx.reply(`
+  //   该ton地址已经被绑定，请重新绑定.
+  // 或者联系管理员协调处理
+  //   `)
+  //   }
   return
 
 
-  // if (isTONAddress(address)) {
-
-  //   await ctx.reply("是地址")
-  // } else {
-  //   await ctx.reply("不是地址")
-  // }
-
-  // const movies: string[] = [];
-  // for (let i = 0; i < 1; i++) {
-  //   (await ctx.reply(`告诉我第 ${i + 1} 名！`));
-  //   const titleCtx = await conversation.waitFor(":text");
-  //   movies.push(titleCtx.msg.text);
-  // }
-  // await ctx.reply("这里有一个更好的排名！");
-  // movies.sort();
-  // await ctx.reply(movies.map((m, i) => `${i + 1}. ${m}`).join("\n"));
+ 
 
 }

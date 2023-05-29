@@ -4,7 +4,7 @@ import { routes } from './routers/botRouer'
 import { routes1 } from './routers/apiRouter'
 import {initBot} from './bot/index'
 import { Bot, webhookCallback } from 'grammy'
-
+const fastifyCors = require('fastify-cors');
 // env环境变量设置↓↓↓↓↓↓↓↓↓↓
 require('dotenv').config();
 
@@ -29,7 +29,10 @@ server.setErrorHandler((error, request, reply) => {
 
 // initBot() // 初始化机器人
 
-
+server.register(fastifyCors, {
+  origin: '*',
+  credentials: true,
+});
 
 server.register(routes)
 server.register(routes1)

@@ -52,6 +52,7 @@ export async function initBot() {
     // 安装菜单
     bot.use(menu);
 
+   
 
 
     // 处理 /start 命令。
@@ -65,8 +66,8 @@ export async function initBot() {
 
     //   await ctx.conversation.enter("withdrawal");
     // });
-
-
+    
+    
     bot.command("balance", async (ctx) => {
       // 查询余额
       await ctx.reply("balance");
@@ -77,7 +78,7 @@ export async function initBot() {
       inline_keyboard: [
         [
           //process.env
-          { text: '开始', url: `https://t.me/${process.env.BOT_NAME}` },
+          { text: '开始', url: `${process.env.BOT_LINK}` },
           // { text: '提现', url: `https://t.me/${process.env}` }
         ]
       ]
@@ -85,6 +86,8 @@ export async function initBot() {
 
     // 处理其他的消息。
     bot.on("message", async (ctx) => {
+   
+      // console.log("ctx.message.chat",ctx.message)
       if (ctx.message.chat.type == "group") {
         // 消息来自组
         console.log("当前消息来自组", ctx.message.chat.id)
@@ -115,7 +118,7 @@ export async function initBot() {
         // sendWinMsgByBot(gropId,"开奖信息") 
 
       }
-      console.log('msg', ctx.message)
+     
     });
 
     // 文本输入栏中显示建议的命令列表。 命令名称必须消息开头
@@ -189,7 +192,7 @@ export async function sendWinMsgByBot(msg: string) {
     const markup = {
       inline_keyboard: [
         [
-          { text: '参与', url: `https://t.me/${process.env.BOT_NAME}` },
+          { text: '参与', url: `${process.env.BOT_LINK}` },
           // { text: '提现', url: 'https://t.me/yiyuangou2_bot' }
         ]
       ]

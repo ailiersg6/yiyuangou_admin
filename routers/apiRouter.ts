@@ -1,6 +1,8 @@
-import fastify, { FastifyInstance } from 'fastify'
-import { test1,inster1,inster2,inster3, bind ,rewarded,product,product1,login,open,issue} from '../controller/test'
+import fastify, { FastifyInstance, FastifyReply, FastifyRequest, RawServerDefault } from 'fastify'
+import { test1,inster1,inster2,inster3, bind ,rewarded,product,product1,login,open} from '../controller/test'
 import { sendWinMsgByBot } from '../bot'
+import { RouteGenericInterface } from 'fastify/types/route'
+import { IncomingMessage, ServerResponse } from 'http'
 
 
 export const routes1 = async (fastify: FastifyInstance) => {
@@ -17,7 +19,7 @@ export const routes1 = async (fastify: FastifyInstance) => {
         console.log(obj)
         reply.send(obj)
     })
-    // 参与记录函数待完善
+    // 参与记录函数
     fastify.post('/add1', async (request, reply) => {
         let obj = await inster2(request, reply)
         console.log(obj)
@@ -89,4 +91,8 @@ export const routes1 = async (fastify: FastifyInstance) => {
    
 }
 
+
+function issue(request: FastifyRequest<RouteGenericInterface, RawServerDefault, IncomingMessage>, reply: FastifyReply<RawServerDefault, IncomingMessage, ServerResponse<IncomingMessage>, RouteGenericInterface, unknown>) {
+    throw new Error('Function not implemented.')
+}
 
