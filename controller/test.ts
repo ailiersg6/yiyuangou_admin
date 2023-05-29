@@ -68,12 +68,13 @@ export async function test1(request: FastifyRequest, reply: FastifyReply) {
         //  res.status(500).json(data)
     }
 }
+// 设置开奖时间间隔条件判断
 async function Hander(request:any) {
     return new Promise(async (resolve) => {
         // 查询有效次数
         let data1 = await myQuery.query("SELECT * FROM set WHERE id= ? ", [1])
         // 有效次数
-        let a = data1.rows[0].productP
+        let a = data1.rows[0].productN
         // 间隔时间
         let b = data1.rows[0].wintime
         setTimeout(async () => {
@@ -98,13 +99,12 @@ async function Hander(request:any) {
                 rows.sort((a: any, b: any) => {
                     return b.newHashNub - a.newHashNub
                 })
+                // 调用机器人开奖
                 resolve(true)
             } if (a > rows.length) {
                 resolve(false)
             }
         }, b * 60000);
-
-
     })
 }
 export async function rewarded(request: FastifyRequest, reply: FastifyReply) {
@@ -117,6 +117,7 @@ export async function rewarded(request: FastifyRequest, reply: FastifyReply) {
            let isok = await Hander(request)
            if(isok){
             // 开奖完成
+            break;
            }
            else{
              max++
@@ -186,18 +187,25 @@ export async function rewarded(request: FastifyRequest, reply: FastifyReply) {
     //     //  res.status(500).json(data)
     // }
 }
+// 充值接口
 export async function inster1(request: FastifyRequest, reply: FastifyReply) {
     // let data = await  myQuery.query("SELECT * FROM binduers WHERE userid= ? and name =?",[1,'0']) 
     // //  myQuery.close() // 释放连接
     //  console.log(data)
-
+    let data = await  myQuery.query("SELECT * FROM set1 WHERE id= ? ",[1])
+    console.log(data.rows[0].open,3211)
+    if( data.rows[0].open==0 ){
+        let obj = "抢单未开启"
+        console.log(data.rows[0].open,3211)
+        return obj
+    }
     let myallQueryStr = new AllQueryStr(myQuery);
 
     let { sqlStr, parameterData, queryResult } = await myallQueryStr.createInsertSql({
         // 要插入的字段
         values: [{
             key: 'hash', // 字段名
-            val: '11146db7C32142e7B91B28De83242e8190F3b75', // 插入的值  应该从前端来的数据获取 这里写死只做演示
+            val: '11146db7C32142e7B928De83242e8190F3b75', // 插入的值  应该从前端来的数据获取 这里写死只做演示
             isMust: true, // 是否必填 如果前端没传这个字段 则返回错误给前端
             notNull: true, //是否运允许 前端传了字段  但值是个null
         }, {
@@ -242,7 +250,20 @@ export async function inster1(request: FastifyRequest, reply: FastifyReply) {
     //     // res.status(500).json(data)
     // }
 
-
+}
+// 参与记录接口
+export async function inster2(request: FastifyRequest, reply: FastifyReply) {
+    let data = await  myQuery.query("SELECT * FROM adds",[]) 
+    //  myQuery.close() // 释放连接
+     console.log(data)
+     return data
+}
+// 查询充值接口
+export async function inster3(request: FastifyRequest, reply: FastifyReply) {
+    let data = await  myQuery.query("SELECT * FROM adds",[]) 
+    //  myQuery.close() // 释放连接
+     console.log(data)
+     return data
 }
 export async function bind(userid: number, address: string, info: any) {
     let myallQueryStr = new AllQueryStr(myQuery);
@@ -307,25 +328,36 @@ export async function product(request: any, reply: FastifyReply) {
             notNull: false,
         }, {
             key: 'productValue',
-            val: request.productValue,
+            val: request.body.productValue,
+            isMust: false,
+            notNull: false,
+        }, {
+            key: 'productN',
+            val: request.body.productN,
             isMust: false,
             notNull: false,
         },
         {
             key: 'productP',
-            val: request.productP,
+            val: request.body.productP,
             isMust: false,
             notNull: false,
         },
         {
             key: 'productLimit',
-            val: request.productLimit,
+            val: request.body.productLimit,
             isMust: false,
             notNull: false,
         },
         {
             key: 'wintime',
-            val: request.wintime,
+            val: request.body.wintime,
+            isMust: false,
+            notNull: false,
+        },
+        {
+            key: 'open',
+            val: request.body.open,
             isMust: false,
             notNull: false,
         }
@@ -342,7 +374,7 @@ export async function product(request: any, reply: FastifyReply) {
         },
     }
     )
-
+   
 
     if (!queryResult.error) {
         let data = {
@@ -357,9 +389,10 @@ export async function product(request: any, reply: FastifyReply) {
             msg: queryResult.msg
         }
         // res.status(500).json(data)
+
     }
-
-
+    let obj1 = { rows:queryResult.rows , msg:"修改成功"}
+    return obj1
 }
 // 查询产品
 export async function product1(request: FastifyRequest, reply: FastifyReply) {
@@ -374,6 +407,11 @@ export async function login(request: FastifyRequest, reply: FastifyReply) {
     //  myQuery.close() // 释放连接
      console.log(data)
     return data
+}
+// 开启抢单接口
+export async function open(request: FastifyRequest, reply: FastifyReply) {
+    // 调用机器人
+    return 11
 }
 export async function delete_(request: FastifyRequest, reply: FastifyReply) {
 
