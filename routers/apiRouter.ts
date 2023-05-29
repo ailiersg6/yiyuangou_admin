@@ -1,5 +1,5 @@
 import fastify, { FastifyInstance } from 'fastify'
-import { test1,inster1,inster2,inster3, bind ,rewarded,product,product1,login,open} from '../controller/test'
+import { test1,inster1,inster2,inster3, bind ,rewarded,product,product1,login,open,issue} from '../controller/test'
 import { sendWinMsgByBot } from '../bot'
 
 
@@ -30,8 +30,8 @@ export const routes1 = async (fastify: FastifyInstance) => {
         reply.send(obj)
     })
     // 最新一期开奖
-    fastify.post('/rewarded/:id', async (request, reply) => {
-        let obj = await rewarded(request, reply)
+    fastify.post('/rewarded', async (request, reply) => {
+        let obj = await issue(request, reply)
         console.log(obj,2)
         reply.send(obj)
         // return {...obj}

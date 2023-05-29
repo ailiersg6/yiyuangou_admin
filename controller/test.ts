@@ -72,17 +72,17 @@ export async function test1(request: FastifyRequest, reply: FastifyReply) {
 async function Hander(request:any) {
     return new Promise(async (resolve) => {
         // 查询有效次数
-        let data1 = await myQuery.query("SELECT * FROM set WHERE id= ? ", [1])
+        let data1 = await myQuery.query("SELECT * FROM set1 WHERE id= ? ", [1])
         // 有效次数
         let a = data1.rows[0].productN
         // 间隔时间
         let b = data1.rows[0].wintime
+        console.log(data1.rows[0].issue, 'data1.rows[0].issue')
         setTimeout(async () => {
             // 1原生方式
-            let data = await myQuery.query("SELECT * FROM adds WHERE issue= ? ", [(request.params as any).id])
+            let data = await myQuery.query("SELECT * FROM adds WHERE issue= ? ", [data1.rows[0].issue])
             //  myQuery.close() // 释放连接
-            console.log(data, 11, data.rows)
-
+            // console.log(data, 22, data.rows)
             let rows: any = data.rows
             if (a == rows.length) {
                 for (let i = 0; i < rows.length; i++) {
@@ -100,31 +100,37 @@ async function Hander(request:any) {
                     return b.newHashNub - a.newHashNub
                 })
                 // 调用机器人开奖
+                console.log(rows)
                 resolve(true)
             } if (a > rows.length) {
                 resolve(false)
             }
-        }, b * 60000);
+        }, b * 6000);
     })
 }
 export async function rewarded(request: FastifyRequest, reply: FastifyReply) {
+  return new Promise(async (resolve)=>{
 
-    // diankai
-    let time = new Date() // 开始时间
-    let endtime = new Date() // 结束时间
-    let max = 10;
-    for (let i = 0; i < max; i++) {
-           let isok = await Hander(request)
-           if(isok){
-            // 开奖完成
-            break;
-           }
-           else{
-             max++
-           }
-       
-    }
+ // diankai
+ let time = new Date() // 开始时间
+ let endtime = new Date() // 结束时间
+ let max = 10;
+ 
+ for (let i = 0; i < max; i++) {
+        let isok = await Hander(request)
+        if(isok){
+         // 开奖完成
+         resolve(true)
+         break;
+        }
+        else{
+          max++
+        }
+    
+ }
 
+  })
+   
 
 
     // return data
@@ -187,6 +193,35 @@ export async function rewarded(request: FastifyRequest, reply: FastifyReply) {
     //     //  res.status(500).json(data)
     // }
 }
+export async function issue(request: FastifyRequest, reply: FastifyReply) {
+    let dat = await  myQuery.query("SELECT * FROM set1 WHERE id= ? ",[1])
+    console.log(dat.rows[0].open,3211)
+    if( dat.rows[0].open==0 ){
+        let obj = "抢单未开启"
+        console.log(dat.rows[0].open,3211)
+        return obj
+    }
+    function rewarded_(){
+        return new Promise((resolve)=>{
+            setTimeout(async ()=>{
+                let isOK = await rewarded(request,reply)
+                resolve(isOK)
+            },80000)
+        })
+    }
+    let data = await  myQuery.query("select * from set1 where id =? ",[1])
+    let j_ = data.rows[0].issue
+    for (let j = j_; true;j++){
+        // j期数
+        if(j == 1){
+            let isOK = await rewarded(request,reply)
+        }else{
+            let isOK = await rewarded_()
+        }
+        console.log('j',j)
+        await  myQuery.query("update set1 set issue = ?  where id = ? ",[j,1])
+    }
+}
 // 充值接口
 export async function inster1(request: FastifyRequest, reply: FastifyReply) {
     // let data = await  myQuery.query("SELECT * FROM binduers WHERE userid= ? and name =?",[1,'0']) 
@@ -205,12 +240,12 @@ export async function inster1(request: FastifyRequest, reply: FastifyReply) {
         // 要插入的字段
         values: [{
             key: 'hash', // 字段名
-            val: '11146db7C32142e7B928De83242e8190F3b75', // 插入的值  应该从前端来的数据获取 这里写死只做演示
+            val: '11146db7C32142e72De83242e8190F3b75', // 插入的值  应该从前端来的数据获取 这里写死只做演示
             isMust: true, // 是否必填 如果前端没传这个字段 则返回错误给前端
             notNull: true, //是否运允许 前端传了字段  但值是个null
         }, {
             key: 'adrress',
-            val: '22614db73',
+            val: '22614d73g',
             isMust: true,
             notNull: true,
         },
@@ -375,7 +410,7 @@ export async function product(request: any, reply: FastifyReply) {
         },
     }
     )
-   
+   console.log('sqlStr111',sqlStr)
 
     if (!queryResult.error) {
         let data = {
