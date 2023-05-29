@@ -1,5 +1,5 @@
 import fastify, { FastifyInstance } from 'fastify'
-import { test1,inster1,bind ,rewarded,product,product1,login,open} from '../controller/test'
+import { test1,inster1,inster2,inster3, bind ,rewarded,product,product1,login,open} from '../controller/test'
 import { sendWinMsgByBot } from '../bot'
 
 
@@ -13,13 +13,22 @@ export const routes1 = async (fastify: FastifyInstance) => {
     })
     // 充值接口
     fastify.post('/add', async (request, reply) => {
-        let obj = inster1(request, reply)
+        let obj = await inster1(request, reply)
+        console.log(obj)
         reply.send(obj)
     })
     // 参与记录函数
-
-    
-
+    fastify.post('/add1', async (request, reply) => {
+        let obj = await inster2(request, reply)
+        console.log(obj)
+        reply.send(obj)
+    })
+    // 充值接口查询
+    fastify.post('/add2', async (request, reply) => {
+        let obj = await inster3(request, reply)
+        console.log(obj)
+        reply.send(obj)
+    })
     // 最新一期开奖
     fastify.post('/rewarded/:id', async (request, reply) => {
         let obj = await rewarded(request, reply)

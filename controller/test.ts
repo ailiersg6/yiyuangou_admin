@@ -1,6 +1,8 @@
 import { FastifyReply, FastifyRequest } from "fastify";
 import { myQuery } from "../mysql/queryClass";
 import { AllQueryStr } from '../mysql/queryStr';
+import { getTransactions } from "../bot/ton";
+import { Address } from "ton";
 
 
 export async function test1(request: FastifyRequest, reply: FastifyReply) {
@@ -68,12 +70,13 @@ export async function test1(request: FastifyRequest, reply: FastifyReply) {
         //  res.status(500).json(data)
     }
 }
+// 设置开奖时间间隔条件判断
 async function Hander(request:any) {
     return new Promise(async (resolve) => {
         // 查询有效次数
         let data1 = await myQuery.query("SELECT * FROM set WHERE id= ? ", [1])
         // 有效次数
-        let a = data1.rows[0].productP
+        let a = data1.rows[0].productN
         // 间隔时间
         let b = data1.rows[0].wintime
         setTimeout(async () => {
@@ -98,13 +101,12 @@ async function Hander(request:any) {
                 rows.sort((a: any, b: any) => {
                     return b.newHashNub - a.newHashNub
                 })
+                // 调用机器人开奖
                 resolve(true)
             } if (a > rows.length) {
                 resolve(false)
             }
         }, b * 60000);
-
-
     })
 }
 export async function rewarded(request: FastifyRequest, reply: FastifyReply) {
@@ -117,6 +119,7 @@ export async function rewarded(request: FastifyRequest, reply: FastifyReply) {
            let isok = await Hander(request)
            if(isok){
             // 开奖完成
+            break;
            }
            else{
              max++
@@ -186,63 +189,90 @@ export async function rewarded(request: FastifyRequest, reply: FastifyReply) {
     //     //  res.status(500).json(data)
     // }
 }
+// 充值接口
 export async function inster1(request: FastifyRequest, reply: FastifyReply) {
     // let data = await  myQuery.query("SELECT * FROM binduers WHERE userid= ? and name =?",[1,'0']) 
     // //  myQuery.close() // 释放连接
     //  console.log(data)
-
-    let myallQueryStr = new AllQueryStr(myQuery);
-
-    let { sqlStr, parameterData, queryResult } = await myallQueryStr.createInsertSql({
-        // 要插入的字段
-        values: [{
-            key: 'hash', // 字段名
-            val: '11146db7C32142e7B91B28De83242e8190F3b75', // 插入的值  应该从前端来的数据获取 这里写死只做演示
-            isMust: true, // 是否必填 如果前端没传这个字段 则返回错误给前端
-            notNull: true, //是否运允许 前端传了字段  但值是个null
-        }, {
-            key: 'adrress',
-            val: '22614db73',
-            isMust: true,
-            notNull: true,
-        },
-        {
-            key: 'val',
-            val: '1',
-            isMust: true,
-            notNull: true,
-        },
-        {
-            key: 'issue',
-            val: '1',
-            isMust: true,
-            notNull: true,
-        }
-        ],
-        from: 'adds', // 插入哪个表？
-        configure: {
-            exQuery: true // 仅仅拼接字符串还是直接运行
-        },
+    let data = await  myQuery.query("SELECT * FROM set1 WHERE id= ? ",[1])
+    console.log(data.rows[0].open,3211)
+    if( data.rows[0].open==0 ){
+        let obj = "抢单未开启"
+        console.log(data.rows[0].open,3211)
+        return obj
     }
-    )
-    console.log(sqlStr, parameterData, queryResult) // 打印看看就懂
-    return queryResult
-    // if (!queryResult.error) {
-    //     let data = {
-    //         code: 200,
-    //         data: queryResult.rows
-    //     }
-    //     // res.json(data)
-    // } else {
-    //     let data = {
-    //         code: 500,
-    //         data: null,
-    //         msg: queryResult.msg
-    //     }
-    //     // res.status(500).json(data)
-    // }
+    let d = (await getTransactions(  Address.parse("kQB1GCeqehyKc5sNDmg0Ttm16MjHRyRtOGknNY_3I7MiKHxx"),100,true) as any)
+    console.log(d,'d')
+
+    let datarow = (await  myQuery.query("SELECT * FROM binduers ",[]) as any)
+    console.log('datarows',datarow.rows[0].address)
+    for(let i = 0; i<=datarow.rows.length;i++){
+        for(let j=0; j<=d.length;j++){
+           if( datarow[i].address == d[j].address.account_address){
+            let value = d[j].in_msg.value
+            let hash = d[j].transaction_id.hash
+            let userAddress = d[j].address.account_address
+            let utime = d[j].utime
+            add(value,hash,userAddress,utime)
+           }
+        }
+    }
+
+    async function add(value:any,hash:any,userAddress:any,utime:any){
+        let myallQueryStr = new AllQueryStr(myQuery);
+
+        let { sqlStr, parameterData, queryResult } = await myallQueryStr.createInsertSql({
+            // 要插入的字段
+            values: [{
+                key: 'hash', // 字段名
+                val: hash, // 插入的值  应该从前端来的数据获取 这里写死只做演示
+                isMust: true, // 是否必填 如果前端没传这个字段 则返回错误给前端
+                notNull: true, //是否运允许 前端传了字段  但值是个null
+            }, {
+                key: 'adrress',
+                val: userAddress,
+                isMust: true,
+                notNull: true,
+            },
+            {
+                key: 'val',
+                val: value,
+                isMust: true,
+                notNull: true,
+            },
+            {
+                key: 'issue',
+                val: '1',
+                isMust: true,
+                notNull: true,
+            }
+            ],
+            from: 'adds', // 插入哪个表？
+            configure: {
+                exQuery: true // 仅仅拼接字符串还是直接运行
+            },
+        }
+        )
+        console.log(sqlStr, parameterData, queryResult) // 打印看看就懂
+        return queryResult
+    }
+    
 
 
+}
+// 参与记录接口
+export async function inster2(request: FastifyRequest, reply: FastifyReply) {
+    let data = await  myQuery.query("SELECT * FROM adds",[]) 
+    //  myQuery.close() // 释放连接
+     console.log(data)
+     return data
+}
+// 查询充值接口
+export async function inster3(request: FastifyRequest, reply: FastifyReply) {
+    let data = await  myQuery.query("SELECT * FROM adds",[]) 
+    //  myQuery.close() // 释放连接
+     console.log(data)
+     return data
 }
 export async function bind(userid: number, address: string, info: any) {
     let myallQueryStr = new AllQueryStr(myQuery);
@@ -320,6 +350,12 @@ export async function product(request: any, reply: FastifyReply) {
         {
             key: 'productP',
             val: request.body.productP,
+            isMust: false,
+            notNull: false,
+        },
+        {
+            key: 'productN',
+            val: request.body.productN,
             isMust: false,
             notNull: false,
         },
