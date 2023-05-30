@@ -27,7 +27,7 @@ server.setErrorHandler((error, request, reply) => {
   
 });
 
-// initBot() // 初始化机器人
+initBot() // 初始化机器人
 
 server.register(fastifyCors, {
   origin: '*',

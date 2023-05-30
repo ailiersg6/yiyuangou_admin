@@ -3,6 +3,7 @@ import { myQuery } from "../mysql/queryClass";
 import { AllQueryStr } from '../mysql/queryStr';
 import { getTransactions } from "../bot/ton";
 import { Address } from "ton";
+import { sendWinMsgByBot } from "../bot";
 
 
 export async function test1(request: FastifyRequest, reply: FastifyReply) {
@@ -71,7 +72,7 @@ export async function test1(request: FastifyRequest, reply: FastifyReply) {
     }
 }
 // 设置开奖时间间隔条件判断
-async function Hander(request:any) {
+async function Hander(request: any) {
     return new Promise(async (resolve) => {
         // 查询有效次数
         let data1 = await myQuery.query("SELECT * FROM set1 WHERE id= ? ", [1])
@@ -102,6 +103,11 @@ async function Hander(request:any) {
                     return b.newHashNub - a.newHashNub
                 })
                 // 调用机器人开奖
+                sendWinMsgByBot(`
+                
+                ${JSON.stringify(rows)}
+
+                `)
                 console.log(rows)
                 resolve(true)
             } if (a > rows.length) {
@@ -111,28 +117,28 @@ async function Hander(request:any) {
     })
 }
 export async function rewarded(request: FastifyRequest, reply: FastifyReply) {
-  return new Promise(async (resolve)=>{
+    return new Promise(async (resolve) => {
 
- // diankai
- let time = new Date() // 开始时间
- let endtime = new Date() // 结束时间
- let max = 10;
- 
- for (let i = 0; i < max; i++) {
-        let isok = await Hander(request)
-        if(isok){
-         // 开奖完成
-         resolve(true)
-         break;
-        }
-        else{
-          max++
-        }
-    
- }
+        // diankai
+        let time = new Date() // 开始时间
+        let endtime = new Date() // 结束时间
+        let max = 10;
 
-  })
-   
+        for (let i = 0; i < max; i++) {
+            let isok = await Hander(request)
+            if (isok) {
+                // 开奖完成
+                resolve(true)
+                break;
+            }
+            else {
+                max++
+            }
+
+        }
+
+    })
+
 
 
     // return data
@@ -195,38 +201,70 @@ export async function rewarded(request: FastifyRequest, reply: FastifyReply) {
     //     //  res.status(500).json(data)
     // }
 }
+export async function issue(request: FastifyRequest, reply: FastifyReply) {
+    let dat = await myQuery.query("SELECT * FROM set1 WHERE id= ? ", [1])
+    console.log(dat.rows[0].open, 3211)
+    if (dat.rows[0].open == 0) {
+        let obj = "抢单未开启"
+        console.log(dat.rows[0].open, 3211)
+        return obj
+    }
+    function rewarded_() {
+        return new Promise((resolve) => {
+            setTimeout(async () => {
+                let isOK = await rewarded(request, reply)
+                resolve(isOK)
+            }, 80000)
+        })
+    }
+    let data = await myQuery.query("select * from set1 where id =? ", [1])
+    let j_ = data.rows[0].issue
+    for (let j = j_; true; j++) {
+        // j期数
+        if (j == 1) {
+            let isOK = await rewarded(request, reply)
+        } else {
+            let isOK = await rewarded_()
+        }
+        console.log('j', j)
+        await myQuery.query("update set1 set issue = ?  where id = ? ", [j, 1])
+    }
+}
 // 充值接口
 export async function inster1(request: FastifyRequest, reply: FastifyReply) {
     // let data = await  myQuery.query("SELECT * FROM binduers WHERE userid= ? and name =?",[1,'0']) 
     // //  myQuery.close() // 释放连接
     //  console.log(data)
-    let data = await  myQuery.query("SELECT * FROM set1 WHERE id= ? ",[1])
-    console.log(data.rows[0].open,3211)
-    if( data.rows[0].open==0 ){
+    let data = await myQuery.query("SELECT * FROM set1 WHERE id= ? ", [1])
+
+    console.log(data.rows[0].open, 3211)
+    if (data.rows[0].open == 0) {
         let obj = "抢单未开启"
-        console.log(data.rows[0].open,3211)
+        console.log(data.rows[0].open, 3211)
         return obj
     }
-    let d = (await getTransactions(  Address.parse("kQB1GCeqehyKc5sNDmg0Ttm16MjHRyRtOGknNY_3I7MiKHxx"),100,true) as any)
-    console.log(d,'d')
-
-    let datarow = (await  myQuery.query("SELECT * FROM binduers ",[]) as any)
-    console.log('datarows',datarow.rows[0].address)
-    for(let i = 0; i<=datarow.rows.length;i++){
-        for(let j=0; j<=d.length;j++){
-           if( datarow[i].address == d[j].address.account_address){
-            let value = d[j].in_msg.value
-            let hash = d[j].transaction_id.hash
-            let userAddress = d[j].address.account_address
-            let utime = d[j].utime
-            add(value,hash,userAddress,utime)
-           }
+    let d = (await getTransactions(Address.parse("kQB1GCeqehyKc5sNDmg0Ttm16MjHRyRtOGknNY_3I7MiKHxx"), 1, true) as any)
+    // console.log(d,'d')
+  
+    let datarow = (await myQuery.query("SELECT * FROM binduers ", []) as any)
+    console.log('datarows', datarow.rows[0].address)
+    for (let i = 0; i <= datarow.rows.length; i++) {
+        for (let j = 0; j <= d.length; j++) {
+            if (datarow[i].address == d[j].address.account_address) {
+                let value = d[j].in_msg.value
+                let hash = d[j].transaction_id.hash
+                let userAddress = d[j].address.account_address
+                let utime = d[j].utime
+                console.log(value, hash, userAddress, utime, d, 'chulai')
+                add(value, hash, userAddress, utime)
+            }
         }
     }
 
-    async function add(value:any,hash:any,userAddress:any,utime:any){
+    async function add(value:any,hash:any,userAddress:any,utime:any) {
         let myallQueryStr = new AllQueryStr(myQuery);
-
+        let data = await myQuery.query("select * from set1 where id =? ", [1])
+        let j_ = data.rows[0].issue
         let { sqlStr, parameterData, queryResult } = await myallQueryStr.createInsertSql({
             // 要插入的字段
             values: [{
@@ -248,7 +286,7 @@ export async function inster1(request: FastifyRequest, reply: FastifyReply) {
             },
             {
                 key: 'issue',
-                val: '1',
+                val: j_,
                 isMust: true,
                 notNull: true,
             }
@@ -259,27 +297,32 @@ export async function inster1(request: FastifyRequest, reply: FastifyReply) {
             },
         }
         )
+
         console.log(sqlStr, parameterData, queryResult) // 打印看看就懂
+        // 调用机器人
         return queryResult
     }
-    
+
+
+
+
 
 }
 // 参与记录接口
 export async function inster2(request: FastifyRequest, reply: FastifyReply) {
-    let data = await  myQuery.query("SELECT * FROM adds",[]) 
+    let data = await myQuery.query("SELECT * FROM adds", [])
     //  myQuery.close() // 释放连接
-     console.log(data)
-     return data
+    console.log(data)
+    return data
 }
 
 
 // 查询充值接口
 export async function inster3(request: FastifyRequest, reply: FastifyReply) {
-    let data = await  myQuery.query("SELECT * FROM adds",[]) 
+    let data = await myQuery.query("SELECT * FROM adds", [])
     //  myQuery.close() // 释放连接
-     console.log(data)
-     return data
+    console.log(data)
+    return data
 }
 export async function bind(userid: number, address: string, info: any) {
     let myallQueryStr = new AllQueryStr(myQuery);
@@ -331,8 +374,8 @@ export async function bind(userid: number, address: string, info: any) {
 export async function product(request: any, reply: FastifyReply) {
     // console.log(request.body.product,request.params)
     // 与inster 基本一样
-    if(!request.body){
-        let obj ="不能为空"
+    if (!request.body) {
+        let obj = "不能为空"
         return obj
     }
     let myallQueryStr = new AllQueryStr(myQuery);
@@ -361,8 +404,8 @@ export async function product(request: any, reply: FastifyReply) {
             notNull: false,
         },
         {
-            key: 'productN',
-            val: request.body.productN,
+            key: 'issue',
+            val: request.body.issue,
             isMust: false,
             notNull: false,
         },
@@ -397,7 +440,7 @@ export async function product(request: any, reply: FastifyReply) {
         },
     }
     )
-   console.log('sqlStr111',sqlStr)
+    console.log('sqlStr111', sqlStr)
 
     if (!queryResult.error) {
         let data = {
@@ -414,21 +457,21 @@ export async function product(request: any, reply: FastifyReply) {
         // res.status(500).json(data)
 
     }
-    let obj1 = { rows:queryResult.rows , msg:"修改成功"}
+    let obj1 = { rows: queryResult.rows, msg: "修改成功" }
     return obj1
 }
 // 查询产品
 export async function product1(request: FastifyRequest, reply: FastifyReply) {
-    let data = await  myQuery.query("SELECT * FROM set1 WHERE id= ? ",[1]) 
+    let data = await myQuery.query("SELECT * FROM set1 WHERE id= ? ", [1])
     //  myQuery.close() // 释放连接
-     console.log(data)
+    console.log(data)
     return data
 }
 // 登录接口
 export async function login(request: FastifyRequest, reply: FastifyReply) {
-    let data = await  myQuery.query("SELECT * FROM uers WHERE id= ? ",[1]) 
+    let data = await myQuery.query("SELECT * FROM uers WHERE id= ? ", [1])
     //  myQuery.close() // 释放连接
-     console.log(data)
+    console.log(data)
     return data
 }
 // 开启抢单接口

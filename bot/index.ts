@@ -87,7 +87,7 @@ export async function initBot() {
     // 处理其他的消息。
     bot.on("message", async (ctx) => {
    
-      // console.log("ctx.message.chat",ctx.message)
+      console.log("ctx.message.chat",ctx.message)
       if (ctx.message.chat.type == "group") {
         // 消息来自组
         console.log("当前消息来自组", ctx.message.chat.id)
