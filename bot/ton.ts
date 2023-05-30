@@ -33,6 +33,25 @@ export async function getTransactions(toWallet: Address, limit: number = 100, fi
   return incomingTransactions
 
 }
+export async function test(toWallet: Address) {
+  const endpoint =
+    process.env.NETWORK === "mainnet"
+      ? "https://toncenter.com/api/v2/jsonRPC"
+      : "https://testnet.toncenter.com/api/v2/jsonRPC";
+  let httpClient = new HttpApi(
+    endpoint,
+    { apiKey: process.env.TONCENTER_TOKEN }
+  )
+  // 钱包中获取最近 x 笔交易
+
+  // const transactions = await httpClient.(toWallet, {
+
+  // });
+
+
+  // return transactions
+
+}
 /*** 
 *  创建交易连接
 */
@@ -45,6 +64,25 @@ export function generatePaymentLink(toWallet: Address, amount: bigint, comment: 
   return `https://app.tonkeeper.com/transfer/${toWallet}?amount=${toNano(
     amount
   )}&text=${comment}`;
+}
+/*** 
+*  转换hash格式
+*/
+export function changeHash(base64Hash: string) {
+  const hashBase64 = base64Hash;
+  const hashBuffer = Buffer.from(hashBase64, "base64");
+  const hash = hashBuffer.toString("hex");
+  return hash
+}
+
+/*** 
+*  hash脱敏
+*/
+export function formatHash(hash:string) {
+  const prefix = hash.substring(0, 4);
+  const suffix = hash.substring(hash.length - 8);
+  const hiddenPart = "......";
+  return `${prefix}${hiddenPart}${suffix}`;
 }
 
 /**
@@ -96,12 +134,12 @@ async function main() {
   //  let balance = await walletContract.getBalance();// 获取扣费钱包的余额
   const walletSender = walletContract.sender(key.secretKey);
 
-    // open Counter instance by address 打开合约
-    const counterAddress = Address.parse("kQB1GCeqehyKc5sNDmg0Ttm16MjHRyRtOGknNY_3I7MiKHxx");
-    const counter = (new SampleTactContract(counterAddress));
-    const counterContract = client.open(counter);
+  // open Counter instance by address 打开合约
+  const counterAddress = Address.parse("kQB1GCeqehyKc5sNDmg0Ttm16MjHRyRtOGknNY_3I7MiKHxx");
+  const counter = (new SampleTactContract(counterAddress));
+  const counterContract = client.open(counter);
 
-  return { walletContract,counterContract, counterAddress,client ,walletSender}
+  return { walletContract, counterContract, counterAddress, client, walletSender }
 
 
 
@@ -181,7 +219,7 @@ export async function getBalance() {
   let obj = await main()
   if (obj) {
     let d = await obj.counterContract.getBalance()
-   
+
     return d.toString()
   }
 
@@ -194,7 +232,7 @@ export async function getBalance() {
 export async function withdraw() {
   let obj = await main()
   if (obj) {
-    await obj.counterContract.send(obj.walletSender, { value: 10000000n }, "withdraw all"); 
+    await obj.counterContract.send(obj.walletSender, { value: 10000000n }, "withdraw all");
   }
 
 }

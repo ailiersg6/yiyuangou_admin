@@ -9,6 +9,8 @@ import {
 import handleStart from "./start";
 import { Menu } from "@grammyjs/menu";
 import { type } from "os";
+import { myQuery } from "../mysql/queryClass";
+import { formatHash } from "./ton";
 export type MyContext = Context & ConversationFlavor;
 export type MyConversation = Conversation<MyContext>;
 
@@ -52,7 +54,7 @@ export async function initBot() {
     // 安装菜单
     bot.use(menu);
 
-   
+
 
 
     // 处理 /start 命令。
@@ -66,8 +68,8 @@ export async function initBot() {
 
     //   await ctx.conversation.enter("withdrawal");
     // });
-    
-    
+
+
     bot.command("balance", async (ctx) => {
       // 查询余额
       await ctx.reply("balance");
@@ -86,8 +88,9 @@ export async function initBot() {
 
     // 处理其他的消息。
     bot.on("message", async (ctx) => {
-   
-      console.log("ctx.message.chat",ctx.message)
+
+      console.log("ctx.message.chat", ctx.message)
+
       if (ctx.message.chat.type == "group") {
         // 消息来自组
         console.log("当前消息来自组", ctx.message.chat.id)
@@ -118,7 +121,7 @@ export async function initBot() {
         // sendWinMsgByBot(gropId,"开奖信息") 
 
       }
-     
+
     });
 
     // 文本输入栏中显示建议的命令列表。 命令名称必须消息开头
@@ -171,8 +174,8 @@ export async function sendUserMsgByBot(chat_id: any, msg: string) {
         sensitiveLogs: true
       }
     });
-  await  bot.api.sendMessage(chat_id, msg)
-  return new Date()
+    await bot.api.sendMessage(chat_id, msg)
+    return new Date()
   } catch (error) {
     console.log("sendUserMsgByBot", error)
   }
@@ -182,21 +185,72 @@ export async function sendUserMsgByBot(chat_id: any, msg: string) {
 
 /**
  * 通过bot群发送开奖广播 带按钮
- * @param chat_id
  * @param 消息文本
  */
-export async function sendWinMsgByBot(msg: string) {
-  try {
+export async function sendWinMsgByBot(rows: any[],time1:number,globalIssue:number) {
 
+  //NFT达到了有效转账次数之后(也就是最后一次有效转账过后的时候)，机器人发送通知格式，(并且这条信息需要置顶，替换掉开启NFT那条置顶消息，也就是pin到频道)
+  try {
+    let data = await myQuery.query("SELECT * FROM set1 WHERE id= ? ", [1])
+    // 期数
+    let data2 = await myQuery.query("select * from set1 where id =? ", [1])
+    let j_ = data.rows[0].issue
+
+    let data3 = await myQuery.query("select * from set1 where id =? ", [1])
+    let j_1 = data3.rows[0].issue
+    let j_2 = data3.rows[0].productLimit
+    let data4 = await myQuery.query("SELECT * FROM adds WHERE issue= ? and val >= ?", [j_1, j_2])
+    let youxiao = data4.rows.length
+    // 总转账金额
+    let sumVal = await myQuery.query("SELECT SUM(val) as val FROM adds WHERE issue = ?", [j_])
+    let zongshichangtime = ''
     // 内联键盘
-    const markup = {
-      inline_keyboard: [
-        [
-          { text: '参与', url: `${process.env.BOT_LINK}` },
-          // { text: '提现', url: 'https://t.me/yiyuangou2_bot' }
-        ]
-      ]
-    };
+    // const markup = {
+    //   inline_keyboard: [
+    //     [
+    //       { text: '参与', url: `${process.env.BOT_LINK}` },
+    //       // { text: '提现', url: 'https://t.me/yiyuangou2_bot' }
+    //     ]
+    //   ]
+    // };
+
+
+
+    let winList = ``
+    // 前三名
+    for (let i = 0; i < rows.length && i < 3; i++) {
+      winList += `
+          ${i}：${rows[i].adrress}
+转账时间：${formatDate(new Date(rows[i].time))}
+转账地址：${rows[i].adrress}
+接收地址：${formatHash(process.env.OWNER_WALLET!)}
+转账哈希：${formatHash(rows[i].hash)}
+转账哈希数字：${rows[i].newHashNub}
+  
+      `
+    }
+
+    let msg = `
+    期数：NFT-TON-${globalIssue}
+NFT名称：${data.rows[0].product}
+NFT金额：${data.rows[0].productValue}
+币种：TON
+最低转账金额：${data.rows[0].productLimit} TON
+总转账金额：${sumVal.rows[0].val} TON
+总有效转账次数：${youxiao}
+NFT夺宝开启时间：${formatDate(new Date())}
+总时长：${time1} 分钟
+合约状态：关闭
+
+
+
+以下为当期前三名地址及对应详情
+${winList}
+
+注！！！
+
+请暂停使用TON钱包(TonKeeper,TonWallet)进行转账，耐心等待下一期NFT夺宝开启，感谢您的参与！
+    `
 
     let bot = new Bot(process.env.BOT_TOKEN!, {
       client: {
@@ -207,8 +261,55 @@ export async function sendWinMsgByBot(msg: string) {
     if (gropId == 0) {
       console.log("发送不成功 群组id =", gropId)
     } else {
-    await  bot.api.sendMessage(gropId, msg, { reply_markup: markup })
-    return new Date()
+      await bot.api.sendMessage(gropId, msg,{ parse_mode: "HTML" })
+      return new Date()
+    }
+
+
+  } catch (error) {
+    console.log("sendUserMsgByBot", error)
+  }
+}
+
+/**
+ * 发送启动夺宝消息
+ * @param 消息文本
+ */
+export async function sendStartMsgByBot(obj: any,globalIssue:number) {
+  // 启动NFT夺宝发送到频道的内容，和机器人通知(并且这条信息需要置顶，也就是pin到频道
+  
+  let data = await myQuery.query("SELECT * FROM set1 WHERE id= ? ", [1])
+
+
+  try {
+
+    let bot = new Bot(process.env.BOT_TOKEN!, {
+      client: {
+        timeoutSeconds: 60,
+        sensitiveLogs: true
+      }
+    });
+    let msg = `
+    期数：NFT-TON-${globalIssue}
+NFT名称：${data.rows[0].product}
+NFT金额：${data.rows[0].productValue}
+币种：TON
+最低转账金额：${data.rows[0].productLimit} TON
+有效转账次数：${data.rows[0].productN}
+NFT夺宝开启时间：${formatDate(new Date())}
+时长：${data.rows[0].wintime} 分钟
+合约状态：开启
+
+合约地址(点击即可复制)：<code>${process.env.OWNER_WALLET}</code>
+
+请使用TON钱包(TonKeeper,TonWallet)进行转账，低于最低转账金额的订单将不计算排名与有效次数，金额恕不退回。在时长范围内达到有效次数即刻开奖，未达到有效转账次数的情况下将会自动延长一倍时长。
+
+`
+    if (gropId == 0) {
+      console.log("发送不成功 群组id =", gropId)
+    } else {
+      await bot.api.sendMessage(gropId, msg,{ parse_mode: "HTML" })
+      return new Date()
     }
 
 
@@ -218,3 +319,82 @@ export async function sendWinMsgByBot(msg: string) {
 }
 
 
+/**
+ * 发送接收到转账的消息到群里
+ * @param 消息文本
+ */
+export async function sendReceiveMsgByBot(obj: any) {
+  // 开启状态中任何地址转账到合约地址需要发送到频道的内容
+  let data = await myQuery.query("SELECT * FROM set1 WHERE id= ? ", [1])
+
+  let data4 = await myQuery.query("SELECT * FROM adds WHERE id= ?", [0])
+
+  try {
+
+    let bot = new Bot(process.env.BOT_TOKEN!, {
+      client: {
+        timeoutSeconds: 60,
+        sensitiveLogs: true
+      }
+    });
+    let msg = `
+期数：(格式为NFT-TON-期号(这里写成自动进1的8位数))
+NFT名称：${data.rows[0].product}
+NFT金额：${data.rows[0].productValue}
+币种：TON
+最低转账金额：${data.rows[0].productLimit} TON
+有效转账次数：${data.rows[0].productN}
+NFT夺宝开启时间：${formatDate(new Date())}
+时长：${data.rows[0].wintime} 分钟
+合约状态：开启中
+
+转账时间：
+转账钱包地址：
+接收钱包地址：${formatHash(process.env.OWNER_WALLET!)}
+转账币种：TON
+转账金额：X TON
+是否有效：是/否
+转账哈希：
+转账哈希值数字：
+当前排名：
+剩余有效转账次数：
+当期NFT开启时长：00:00:00
+剩余时长：00:00:00
+
+当期最高排名钱包地址：
+当期最高排名哈希：
+当期最高排名哈希数字：
+
+
+合约地址(点击即可复制)：<code>${process.env.OWNER_WALLET}</code>
+
+请使用TON钱包(TonKeeper,TonWallet)进行转账夺宝，低于最低转账金额的转账记录将不计算排名与有效次数，金额恕不退回。在时长范围内达到有效次数即刻开奖，未达到有效转账次数的情况下将会自动延长一倍时长。
+`
+    if (gropId == 0) {
+      console.log("发送不成功 群组id =", gropId)
+    } else {
+      await bot.api.sendMessage(gropId, msg)
+      return new Date()
+    }
+
+
+  } catch (error) {
+    console.log("sendUserMsgByBot", error)
+  }
+}
+
+
+
+
+
+
+function formatDate(date:Date) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  const hours = String(date.getHours()).padStart(2, '0');
+  const minutes = String(date.getMinutes()).padStart(2, '0');
+  const seconds = String(date.getSeconds()).padStart(2, '0');
+  
+  return `${year} ${hours}:${minutes}:${seconds}`;
+}
