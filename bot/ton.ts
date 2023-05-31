@@ -1,6 +1,7 @@
 import { Address, HttpApi, TonClient, WalletContractV4, fromNano, toNano } from "ton";
 import { SampleTactContract } from './output/sample_SampleTactContract';
 import { mnemonicToWalletKey } from "ton-crypto";
+import TonWeb from "tonweb";
 /*** 
 *  获取合约中的转入交易
  * @toWallet Address 合约地址
@@ -33,23 +34,25 @@ export async function getTransactions(toWallet: Address, limit: number = 100, fi
   return incomingTransactions
 
 }
-export async function test(toWallet: Address) {
-  const endpoint =
-    process.env.NETWORK === "mainnet"
-      ? "https://toncenter.com/api/v2/jsonRPC"
-      : "https://testnet.toncenter.com/api/v2/jsonRPC";
-  let httpClient = new HttpApi(
-    endpoint,
-    { apiKey: process.env.TONCENTER_TOKEN }
-  )
-  // 钱包中获取最近 x 笔交易
+export async function test00() {
+  const Address = TonWeb.utils.Address;
+  let addr = new Address("kQB1GCeqehyKc5sNDmg0Ttm16MjHRyRtOGknNY_3I7MiKHxx")
+  
+  let obj = {
+    hashPart:addr.hashPart,
+    isUserFriendly:addr.isUserFriendly,
+    isUrlSafe:addr.isUrlSafe,
+    isBounceable:addr.isBounceable,
+    isTestOnly:addr.isTestOnly,
+    wc:addr.wc,
+    toString_isUserFriendly:addr.toString(true),
+    toString_isUrlSafe:addr.toString(undefined, true),
+    toString_isBounceable:addr.toString(undefined,undefined, true),
+    toString_isTestOnly:addr.toString(undefined,undefined,undefined, true)
+    
+  }
+ return obj
 
-  // const transactions = await httpClient.(toWallet, {
-
-  // });
-
-
-  // return transactions
 
 }
 /*** 

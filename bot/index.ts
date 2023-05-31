@@ -220,34 +220,34 @@ export async function sendWinMsgByBot(rows: any[],time1:number,globalIssue:numbe
     // 前三名
     for (let i = 0; i < rows.length && i < 3; i++) {
       winList += `
-          ${i}：${rows[i].adrress}
-转账时间：${formatDate(new Date(rows[i].time))}
-转账地址：${rows[i].adrress}
-接收地址：${formatHash(process.env.OWNER_WALLET!)}
-转账哈希：${formatHash(rows[i].hash)}
-转账哈希数字：${rows[i].newHashNub}
+  ${i}：${rows[i].adrress}
+  转账时间：${formatDate(new Date(rows[i].time))}
+  转账地址：${rows[i].adrress}
+  接收地址：${formatHash(process.env.OWNER_WALLET!)}
+  转账哈希：${formatHash(rows[i].hash)}
+  转账哈希数字：${rows[i].newHashNub}
   
       `
     }
 
     let msg = `
-    期数：NFT-TON-${globalIssue}
-NFT名称：${data.rows[0].product}
-NFT金额：${data.rows[0].productValue}
-币种：TON
-最低转账金额：${data.rows[0].productLimit} TON
-总转账金额：${sumVal.rows[0].val} TON
-总有效转账次数：${youxiao}
-NFT夺宝开启时间：${formatDate(new Date())}
-总时长：${time1} 分钟
-合约状态：关闭
+      期数：NFT-TON-${globalIssue}
+  NFT名称：${data.rows[0].product}
+  NFT金额：${data.rows[0].productValue}
+  币种：TON
+  最低转账金额：${data.rows[0].productLimit} TON
+  总转账金额：${sumVal.rows[0].val} TON
+  总有效转账次数：${youxiao}
+  NFT夺宝开启时间：${formatDate(new Date())}
+  总时长：${time1} 分钟
+  合约状态：关闭
 
 
 
-以下为当期前三名地址及对应详情
+  以下为当期前三名地址及对应详情
 ${winList}
 
-注！！！
+ 注！！！
 
 请暂停使用TON钱包(TonKeeper,TonWallet)进行转账，耐心等待下一期NFT夺宝开启，感谢您的参与！
     `
@@ -323,7 +323,7 @@ NFT夺宝开启时间：${formatDate(new Date())}
  * 发送接收到转账的消息到群里
  * @param 消息文本
  */
-export async function sendReceiveMsgByBot(obj: any) {
+export async function sendReceiveMsgByBot(obj: any,globalIssue:number) {
   // 开启状态中任何地址转账到合约地址需要发送到频道的内容
   let data = await myQuery.query("SELECT * FROM set1 WHERE id= ? ", [1])
 
@@ -338,7 +338,7 @@ export async function sendReceiveMsgByBot(obj: any) {
       }
     });
     let msg = `
-期数：(格式为NFT-TON-期号(这里写成自动进1的8位数))
+    期数：NFT-TON-${globalIssue}
 NFT名称：${data.rows[0].product}
 NFT金额：${data.rows[0].productValue}
 币种：TON

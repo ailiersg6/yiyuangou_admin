@@ -204,14 +204,15 @@ export async function inster1(request: FastifyRequest, reply: FastifyReply) {
     console.log(data.rows[0].open, 3211)
     if (data.rows[0].open == 0) {
         let obj = "抢单未开启"
-        console.log(data.rows[0].open, 3211)
+        // console.log(data.rows[0].open, 3211)
         return obj
     }
-    let d = (await getTransactions(Address.parse("kQB1GCeqehyKc5sNDmg0Ttm16MjHRyRtOGknNY_3I7MiKHxx"), 1, true) as any)
-    // console.log(d,'d')
-
     let datarow = (await myQuery.query("SELECT * FROM binduers ", []) as any)
-    console.log('datarows', datarow.rows[0].address)
+    console.log('datarows', datarow.rows[2].address)
+    let d = (await getTransactions(Address.parse("kQB1GCeqehyKc5sNDmg0Ttm16MjHRyRtOGknNY_3I7MiKHxx"), 50, true) as any)
+    console.log(d,'查链数据')
+
+    
     for (let i = 0; i <= datarow.rows.length; i++) {
         for (let j = 0; j <= d.length; j++) {
             if (datarow[i].address == d[j].address.account_address) {

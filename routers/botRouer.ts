@@ -1,19 +1,22 @@
 import fastify, { FastifyInstance } from 'fastify'
 import { test1 } from '../controller/test'
 import { sendWinMsgByBot } from '../bot'
-import { getBalance, getTransactions, isContractDeployed, withdraw } from '../bot/ton'
+import { getBalance, getTransactions, isContractDeployed, test00, withdraw } from '../bot/ton'
 import { Address } from 'ton'
 
 
 export const routes = async (fastify: FastifyInstance) => {
     
     fastify.get('/botTest', async (request, reply) => {
-        let d = await getTransactions(  Address.parse("kQB1GCeqehyKc5sNDmg0Ttm16MjHRyRtOGknNY_3I7MiKHxx"),100,true)
+        let d = await getTransactions(  Address.parse("kQB1GCeqehyKc5sNDmg0Ttm16MjHRyRtOGknNY_3I7MiKHxx"),100)
+        return d
+    })
+    fastify.get('/botTest2', async (request, reply) => {
+        let d = await test00()
         return d
     })
     fastify.get('/getbla', async (request, reply) => {
         let d= await getBalance()
-        
         return { hello: 'world',d }
     })
 
