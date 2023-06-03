@@ -1,5 +1,5 @@
 import fastify, { FastifyInstance, FastifyReply, FastifyRequest, RawServerDefault } from 'fastify'
-import { test1,inster1,inster2,inster3, bind ,issue,rewarded,product,product1,login,open} from '../controller/test'
+import { test1,inster1,inster2,inster3, bind ,issue,rewarded,product,product1,product2,product3,getWinner,login,open} from '../controller/test'
 import { sendWinMsgByBot } from '../bot'
 import { RouteGenericInterface } from 'fastify/types/route'
 import { IncomingMessage, ServerResponse } from 'http'
@@ -13,9 +13,9 @@ export const routes1 = async (fastify: FastifyInstance) => {
         reply.send(obj)
         // return {...obj}
     })
-    // 充值接口待完善
+    // 充值接口
     fastify.post('/add', async (request, reply) => {
-        let obj = await inster1(request, reply)
+        let obj = await inster1()
         // console.log(obj)
         reply.send(obj)
     })
@@ -38,9 +38,32 @@ export const routes1 = async (fastify: FastifyInstance) => {
         reply.send(obj)
         // return {...obj}
     })
+    // 中奖记录查询
+    fastify.post('/getWinner', async (request, reply) => {
+        let obj = await getWinner(request, reply)
+        console.log(obj,2)
+        reply.send(obj)
+        // return {...obj}
+    })
+
     // 修改产品接口
     fastify.patch('/product', async (request, reply) => {
         let obj = await product(request, reply)
+        console.log(obj,2)
+        reply.send(obj)
+        // return {...obj}
+    })
+
+     // 关闭抢单接口
+     fastify.post('/product3', async (request, reply) => {
+        let obj = await product3(request, reply)
+        console.log(obj,2)
+        reply.send(obj)
+        // return {...obj}
+    })
+    // 修改期数接口
+    fastify.patch('/product2', async (request, reply) => {
+        let obj = await product2(request, reply)
         console.log(obj,2)
         reply.send(obj)
         // return {...obj}

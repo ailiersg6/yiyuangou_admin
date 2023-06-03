@@ -3,15 +3,16 @@ import { myQuery } from "../mysql/queryClass";
 import { AllQueryStr } from '../mysql/queryStr';
 import { changeHash, getTransactions } from "../bot/ton";
 import { Address } from "ton";
-import { sendStartMsgByBot, sendWinMsgByBot } from "../bot";
+import { sendReceiveMsgByBot, sendStartMsgByBot, sendWinMsgByBot } from "../bot";
 
-let globalIssue = 0; // 当前期数
+let globalIssue = 1; // 当前期数
 let globalOpen = 1; // 活动是否启动
-let globalProductLimit  = 1; // 最低有效金额
+let globalProductLimit = 1; // 最低有效金额
 let globalWintime = 1; // 开奖时间间隔
 let globalProductN = 2; // 有效参与人数
-let globalProduct = "无"; // 
+let globalProductP = 1; // 中奖人数
 let globalProductValue = 1; // 产品价值 
+let globalLeiJiTime = new Date()
 
 export async function test1(request: FastifyRequest, reply: FastifyReply) {
     // 1原生方式
@@ -81,24 +82,25 @@ export async function test1(request: FastifyRequest, reply: FastifyReply) {
 // 设置开奖时间间隔条件判断
 async function Hander(request: any) {
     return new Promise(async (resolve) => {
-        resolve( await abcd1())
+        resolve(await abcd1())
     })
 
 
     function abcd1() {
-       
+
         return new Promise(async (resolve) => {
 
             setTimeout(async () => {
-              
-         
-                 // 有效次数
-         
-             
+
+
+                // 有效次数
+
+                // console.log(globalIssue,'globalIssue哈哈哈')
                 let data = await myQuery.query("SELECT * FROM adds WHERE issue= ? ", [globalIssue])
                 
                 let rows: any = data.rows
-                if (globalProductN == rows.length) {
+                // console.log(rows,'rows啊啊啊',data,'data嗡嗡嗡')
+                if (globalProductN <= rows.length) {
                     let i_
                     for (let i = 0; i < rows.length; i++) {
                         i_ = i
@@ -112,19 +114,31 @@ async function Hander(request: any) {
                         rows[i].newHashNub = parseInt(result)
 
                     }
+
+                    rows = (rows as any[]).filter((item=>{
+                        return item.val >= globalProductLimit
+                    }))
+
                     rows.sort((a: any, b: any) => {
                         return b.newHashNub - a.newHashNub
                     })
+                   
                     // 调用机器人开奖
 
                     let time1 = ((i_ as any) + 1) * globalWintime
-                    sendWinMsgByBot((rows), time1,globalIssue)
-              
-                    console.log("全局期数",globalIssue)
+                    sendWinMsgByBot((rows), time1, globalIssue)
+                     // 修改中奖者状态
+                     let dat = await myQuery.query("SELECT * FROM set1 WHERE id= ? ", [1])
+                     globalProductP = dat.rows[0].productP
+                     for(let i_2 = 0 ;i_2 < globalProductP ; i_2++){
+                        
+                        await myQuery.query("update adds set winners = ? where adrress = ? ", [1,rows[i_2]])
+                    }
+                    console.log("全局期数", globalIssue)
                     await myQuery.query("update set1 set issue = ? ", [globalIssue + 1])
                     // let newVal  = await myQuery.query("select issue from set1", [])
                     // console.log('newVal',newVal)
-                  
+
                     // console.log(rows)
                     resolve(true)
                 } if (globalProductN > rows.length) {
@@ -137,16 +151,20 @@ async function Hander(request: any) {
 export async function rewarded(request: FastifyRequest, reply: FastifyReply) {
     return new Promise(async (resolve) => {
 
-       // 发送开始抢单提示
-        sendStartMsgByBot("",globalIssue)
-      
+        // 发送开始抢单提示
+        sendStartMsgByBot("", globalIssue)
+
         for (let i = 1; true; i++) {
-            console.log(`第${globalIssue}期，第`,i,"次抢单")
+          
+            console.log(`第${globalIssue}期，第`, i, "次抢单")
             let isok = await Hander(request)
             if (isok) {
                 // 开奖完成
                 resolve(true)
                 break;
+            }
+            if(globalOpen == 0){
+                break
             }
         }
     })
@@ -154,14 +172,19 @@ export async function rewarded(request: FastifyRequest, reply: FastifyReply) {
 
 export async function issue(request: FastifyRequest, reply: FastifyReply) {
     let dat = await myQuery.query("SELECT * FROM set1 WHERE id= ? ", [1])
+    
+    // 开启参与时间获取
+    let nowTime = new Date()
+    globalLeiJiTime = nowTime
     // 设置全局变量
+
     globalIssue = dat.rows[0].issue; // 全局期数
     globalOpen = dat.rows[0].open; // 抢单开启状态
 
-  
+
     if (globalOpen == 0) {
         let obj = "抢单未开启"
-        return obj
+        return {msg:obj}
     }
 
     function rewarded_() {
@@ -176,55 +199,37 @@ export async function issue(request: FastifyRequest, reply: FastifyReply) {
     let j_ = globalIssue
 
     for (let j = j_; true; j++) {
+        if(globalOpen == 0){
+          return
+        }
         // j期数
-        console.log("开始第",j,'期')
+        console.log("开始第", j, '期')
         globalIssue = j // 设置全局变量 期数
+       
         if (j == 1) {
             let isOK = await rewarded(request, reply)
-            if(isOK){
+            if (isOK) {
                 await myQuery.query("update set1 set issue = ?", [j])
+               
             }
-           
+
         } else {
             let isOK = await rewarded_()
-            if(isOK){
+            if (isOK) {
+              
                 await myQuery.query("update set1 set issue = ?", [j])
+                globalLeiJiTime =  new Date() 
             }
         }
-        console.log("第",j,'期结束')
+        console.log("第", j, '期结束')
     }
 }
 // 充值接口
-export async function inster1(request: FastifyRequest, reply: FastifyReply) {
+export async function inster1() {
     // let data = await  myQuery.query("SELECT * FROM binduers WHERE userid= ? and name =?",[1,'0']) 
     // //  myQuery.close() // 释放连接
     //  console.log(data)
-    let data = await myQuery.query("SELECT * FROM set1 WHERE id= ? ", [1])
 
-    console.log(data.rows[0].open, 3211)
-    if (data.rows[0].open == 0) {
-        let obj = "抢单未开启"
-        // console.log(data.rows[0].open, 3211)
-        return obj
-    }
-    let datarow = (await myQuery.query("SELECT * FROM binduers ", []) as any)
-    console.log('datarows', datarow.rows[2].address)
-    let d = (await getTransactions(Address.parse("kQB1GCeqehyKc5sNDmg0Ttm16MjHRyRtOGknNY_3I7MiKHxx"), 50, true) as any)
-    console.log(d,'查链数据')
-
-    
-    for (let i = 0; i <= datarow.rows.length; i++) {
-        for (let j = 0; j <= d.length; j++) {
-            if (datarow[i].address == d[j].address.account_address) {
-                let value = d[j].in_msg.value
-                let hash = changeHash(d[j].transaction_id.hash)
-                let userAddress = d[j].address.account_address
-                let utime = d[j].utime
-                console.log(value, hash, userAddress, utime, d, 'chulai')
-                add(value, hash, userAddress, utime)
-            }
-        }
-    }
 
     async function add(value: any, hash: any, userAddress: any, utime: any) {
         let myallQueryStr = new AllQueryStr(myQuery);
@@ -251,7 +256,7 @@ export async function inster1(request: FastifyRequest, reply: FastifyReply) {
             },
             {
                 key: 'issue',
-                val: j_,
+                val: globalIssue,
                 isMust: true,
                 notNull: true,
             }
@@ -263,14 +268,161 @@ export async function inster1(request: FastifyRequest, reply: FastifyReply) {
         }
         )
 
-        console.log(sqlStr, parameterData, queryResult) // 打印看看就懂
+        console.log(sqlStr, parameterData, queryResult,'数据') // 打印看看就懂
         // 调用机器人
-        return queryResult
+        // sendReceiveMsgByBot("",globalIssue,queryResult)
+        return queryResult.error
     }
 
 
+    async function handerTime() {
+        for(let i =0;i<1;i++){
+          
+            await  timeHander()
+           
+        }
+       
+    }
+
+    function timeHander(){
+        return new Promise(async (resolve)=>{
+            setTimeout(async () => {
+                let d=  await  addfc()
+                resolve(d)
+    
+            }, 10000);
+          
+        })
+    }
+    
+    async function addfc() {
+        let data = await myQuery.query("SELECT * FROM set1 WHERE id= ? ", [1])
+
+        console.log(data.rows[0].open, 3211)
+        if (data.rows[0].open == 0) {
+            let obj = "抢单未开启"
+            // console.log(data.rows[0].open, 3211)
+            return obj
+        }
+        let datarow = (await myQuery.query("SELECT * FROM binduers ", []) as any)
+        // console.log('datarows', datarow.rows[2].address)
+       
+        try {
+            let d = (await getTransactions(Address.parse("kQB1GCeqehyKc5sNDmg0Ttm16MjHRyRtOGknNY_3I7MiKHxx"), 50, true) as any)
+            console.log(d, '查链数据')
 
 
+            // for (let i = 0; i < datarow.rows.length; i++) {
+                // console.log(i, 'i')
+                for (let j = 0; j < d.length; j++) {
+                    // console.log(j, 'j', d[j].in_msg.source, 'd[j].in_msg.source', datarow.rows[i].address, 'datarow[i].address')
+                    // console.log('d[j]', d[j], '============', d[j].in_msg.source)
+                    // if (datarow.rows[i].address == d[j].in_msg.source) {
+                        // console.log(d[j].in_msg.value, 'd[j].in_msg.value', d[j].in_msg.value, 'd[j].in_msg.value', changeHash(d[j].transaction_id.hash), 'changeHash(d[j].transaction_id.hash)')
+                        let value = d[j].in_msg.value
+                        let hash = changeHash(d[j].transaction_id.hash)
+                        let userAddress = d[j].in_msg.source
+                        let utime = d[j].utime
+                        let b2:any = null
+                        console.log(new Date(utime*1000),'链上时间',globalLeiJiTime,'本机时间======')
+                        if(globalLeiJiTime<new Date(utime*1000) ){
+                            console.log(value, hash, userAddress, '日期对了=====')
+                             b2 = await add(value, hash, userAddress, utime)
+                            
+                        }else{
+                            console.log('不知大=======！！！！！')
+                            return
+                        }
+                       
+                       console.log(b2,'b2')
+                       if(b2 == false){
+                        console.log('!!!!成立。。。。。。。。。')
+                        let success:any = await myQuery.query("SELECT * FROM adds order by time desc limit 0,1", [])
+                        // console.log(success,'success')
+                        // 是否有效参与
+                        let youXiaoCanYu = ""
+                        if(success.rows[0].val>=globalProductLimit){
+                            youXiaoCanYu = '是'
+                        }else{
+                            youXiaoCanYu = '否'
+                        }
+                        // 转账hash数字
+                        const input = changeHash(success.rows[0].hash);
+                        const regex = /\d+/g;
+                        const matches = input.match(regex);
+                        const result1:any = matches ? matches.join('') : null;
+                        // console.log(result1, 137)
+                        // 根据期数查询实时参与排名
+                        // console.log(globalIssue,'全局期数')
+                        let dataissue = await myQuery.query("SELECT * FROM adds WHERE issue= ? ", [globalIssue])
+                        let rows: any = dataissue.rows
+                        // console.log(rows,'rows有吗？',dataissue,'查询你')
+                        let i_
+                        for (let i = 0; i < rows.length; i++) {
+                            i_ = i
+                            console.log(rows[i].hash, 136)
+                    
+                            const input = rows[i].hash;
+                            const regex = /\d+/g;
+                            const matches = input.match(regex);
+                            const result:any = matches ? matches.join('') : null;
+                            console.log(result, 137)
+                            rows[i].newHashNub = parseInt(result)
+                    
+                        }
+                        rows = (rows as any[]).filter((item=>{
+                            return item.val >= globalProductLimit
+                        }))
+                    
+                        rows.sort((a: any, b: any) => {
+                            return b.newHashNub - a.newHashNub
+                        })
+                        console.log(rows,'最新rows')
+                        // 当前参与实时排名
+                        let dangQianPaiMing:number = 0
+                        for( let i_1 = 0;i_1 < rows.length;i_1++ ){
+                            // console.log(rows[i_1],'rows11有哦',rows[i_1].adrress,'好用')
+                            if(rows[i_1].adrress == success.rows[0].adrress){
+
+                                dangQianPaiMing = i_1
+                            }
+                        }
+                        // 当期最高排名钱包地址
+                        let fistadrress:any = rows[0].adrress
+                        // 当期最高排名哈希
+                        let firsthash:any = rows[0].hash
+                        // 当期最高排名哈希数字
+                        let fistnumber:any =changeHash( rows[0].newHashNub)
+                        // 剩余有效参与次数
+                        let shengyu:number = globalProductN-rows.length
+                        // 时长计算
+                        let startTime = globalLeiJiTime; 
+                        // 开始时间 
+                        let endTime = new Date(); 
+                        // 结束时间 
+                        let timeDifference = endTime.getTime() - startTime.getTime(); 
+                        // 计算差值（单位为毫秒） 
+                        let minutesDifference:number = Math.floor(timeDifference / (1000 * 60)); 
+                        // 将差值转换为分钟数 
+                        console.log(minutesDifference); // 输出分钟数间隔
+                        
+                        sendReceiveMsgByBot('',globalIssue,success,youXiaoCanYu,result1,dangQianPaiMing,fistadrress,firsthash,
+                        fistnumber,shengyu,minutesDifference)
+                       }
+                        
+
+                    // } else {
+                    //     console.log('不成立。。。。。。。。。')
+                    // }
+                // }
+            }
+        } catch (error) {
+            console.log('error',error)
+        }
+     
+    }
+
+    handerTime()
 
 }
 // 参与记录接口
@@ -284,10 +436,69 @@ export async function inster2(request: FastifyRequest, reply: FastifyReply) {
 
 // 查询充值接口
 export async function inster3(request: FastifyRequest, reply: FastifyReply) {
-    let data = await myQuery.query("SELECT * FROM adds", [])
+    let myallQueryStr = new AllQueryStr(myQuery);
+    // sqlStr 拼接好的查询sql字符串
+    // parameterData 查询参数
+    // queryResult 返回的数据   前提是exQuery 为 true
+    let { sqlStr, parameterData, page, queryResult } = await myallQueryStr.createSelectSql(
+        {
+            selectNameArr: ['hash', 'adrress','val','issue','time'], //字段名
+            tableNameArr: ['adds'], //表名
+            // 条件数组
+            wheres: [
+                {
+                    key: 'issue', //字段名
+                    act: '=', // 条件
+                    val: (request.body as any).issue, // 值
+                    // 拼接代码是 `${key} ${act} = ${val} and `
+                },
+                {
+                    key: 'hash', //字段名
+                    act: '=', // 条件
+                    val: (request.body as any).hash, // 值
+                    // 拼接代码是 `${key} ${act} = ${val} and `
+                },
+                {
+                    key: 'adrress', //字段名
+                    act: '=', // 条件
+                    val: (request.body as any).adrress, // 值
+                    // 拼接代码是 `${key} ${act} = ${val} and `
+                },
+                {
+                    key: 'val', //字段名
+                    act: '=', // 条件
+                    val: (request.body as any).val, // 值
+                    // 拼接代码是 `${key} ${act} = ${val} and `
+                },
+            ],
+            // 排序 可选
+            // handleSort: {
+            //     sortOrder: 'desc', // 排序顺序 desc asc 
+            //     sortColumnName: 'account', // 排序字段
+            //     // defaultSortColumn: 'account',
+            //     // defaultSortOrder: 'desc',
+            // },
+            // 分页 可选
+            handlePage: {
+                page: (request.body as any).page, // 页数由前端传递过来 page是返回第几页
+                pageSize: (request.body as any).pageSize
+            },
+            configure: {
+                totalPage: true, // 是否返回总页数
+                exQuery: true // 是否直接运行查询语句
+            }
+        },
+
+    )
+    console.log(sqlStr, parameterData)
+    // let data = await myQuery.query("SELECT * FROM adds", [])
     //  myQuery.close() // 释放连接
-    console.log(data)
-    return data
+    // console.log(data)
+    
+    return {
+      ...queryResult,
+      page_:page
+    }
 }
 export async function bind(userid: number, address: string, info: any) {
     let myallQueryStr = new AllQueryStr(myQuery);
@@ -423,6 +634,7 @@ export async function product(request: any, reply: FastifyReply) {
 
     }
     let obj1 = { rows: queryResult.rows, msg: "修改成功" }
+    
     return obj1
 }
 // 查询产品
@@ -443,6 +655,30 @@ export async function login(request: FastifyRequest, reply: FastifyReply) {
 export async function open(request: FastifyRequest, reply: FastifyReply) {
     // 调用机器人
     return 11
+}
+// 修改产品期数
+export async function product2(request: FastifyRequest, reply: FastifyReply) {
+    let data = await myQuery.query("update set1 set issue = ?", [(request.body as any).issue])
+    //  myQuery.close() // 释放连接
+    console.log(data)
+    return data
+}
+// 关闭抢单接口
+export async function product3(request: FastifyRequest, reply: FastifyReply) {
+    let data = await myQuery.query("update set1 set open = ?", [0])
+    //  myQuery.close() // 释放连接
+    globalOpen = 0
+    console.log(data)
+    return data
+}
+// 中奖查询根据期
+
+export async function getWinner(request: FastifyRequest, reply: FastifyReply) {
+    let data = await myQuery.query("update set1 set winners = ?", [1])
+    //  myQuery.close() // 释放连接
+
+    console.log(data)
+    return data
 }
 export async function delete_(request: FastifyRequest, reply: FastifyReply) {
 
@@ -477,3 +713,4 @@ export async function delete_(request: FastifyRequest, reply: FastifyReply) {
         // res.status(500).json(data)
     }
 }
+

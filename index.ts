@@ -1,5 +1,5 @@
 import fastify from 'fastify'
-import { test1 } from './controller/test'
+import { inster1, test1 } from './controller/test'
 import { routes } from './routers/botRouer'
 import { routes1 } from './routers/apiRouter'
 import {initBot} from './bot/index'
@@ -26,6 +26,9 @@ server.setErrorHandler((error, request, reply) => {
   reply.status(500).send({ error: 'Internal Server Error' });
   
 });
+
+// 接收转账 
+// inster1()
 
 initBot() // 初始化机器人
 

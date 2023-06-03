@@ -323,7 +323,9 @@ NFT夺宝开启时间：${formatDate(new Date())}
  * 发送接收到转账的消息到群里
  * @param 消息文本
  */
-export async function sendReceiveMsgByBot(obj: any,globalIssue:number) {
+export async function sendReceiveMsgByBot(obj: any,globalIssue:number,queryResult:any,youXiaoCanYu:string,result1:number,
+  dangQianPaiMing:number,fistadrress:any,firsthash:any,fistnumber:any,shengyu:number,minutesDifference:number) {
+  console.log('queryResult',queryResult)
   // 开启状态中任何地址转账到合约地址需要发送到频道的内容
   let data = await myQuery.query("SELECT * FROM set1 WHERE id= ? ", [1])
 
@@ -348,22 +350,22 @@ NFT夺宝开启时间：${formatDate(new Date())}
 时长：${data.rows[0].wintime} 分钟
 合约状态：开启中
 
-转账时间：
-转账钱包地址：
+转账时间：${formatDate(queryResult.rows[0].time)}
+转账钱包地址：${formatHash(queryResult.rows[0].adrress)}
 接收钱包地址：${formatHash(process.env.OWNER_WALLET!)}
 转账币种：TON
-转账金额：X TON
-是否有效：是/否
-转账哈希：
-转账哈希值数字：
-当前排名：
-剩余有效转账次数：
-当期NFT开启时长：00:00:00
-剩余时长：00:00:00
+转账金额：${(queryResult.rows[0].val/100000000)} TON
+是否有效：${youXiaoCanYu}
+转账哈希：${formatHash(queryResult.rows[0].hash)}
+转账哈希值数字：${result1}
+当期排名：${dangQianPaiMing}
+剩余有效转账次数：${shengyu}
+当期NFT开启时长：${minutesDifference}分钟
 
-当期最高排名钱包地址：
-当期最高排名哈希：
-当期最高排名哈希数字：
+
+当期最高排名钱包地址：${fistadrress}
+当期最高排名哈希：${firsthash}
+当期最高排名哈希数字：${fistnumber}
 
 
 合约地址(点击即可复制)：<code>${process.env.OWNER_WALLET}</code>
@@ -373,7 +375,7 @@ NFT夺宝开启时间：${formatDate(new Date())}
     if (gropId == 0) {
       console.log("发送不成功 群组id =", gropId)
     } else {
-      await bot.api.sendMessage(gropId, msg)
+      await bot.api.sendMessage(gropId, msg,{ parse_mode: "HTML" })
       return new Date()
     }
 
