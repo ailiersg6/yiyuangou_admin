@@ -1,5 +1,5 @@
 import fastify, { FastifyInstance, FastifyReply, FastifyRequest, RawServerDefault } from 'fastify'
-import { test1,inster1,inster2,inster3, bind ,issue,rewarded,product,product1,product2,product3,getWinner,login,open} from '../controller/test'
+import { test1,inster1,inster2,inster3, bind ,issue,rewarded,product,product1,product2,product3,withdrawApi,getWinner,login,open} from '../controller/test'
 import { sendWinMsgByBot } from '../bot'
 import { RouteGenericInterface } from 'fastify/types/route'
 import { IncomingMessage, ServerResponse } from 'http'
@@ -90,6 +90,13 @@ export const routes1 = async (fastify: FastifyInstance) => {
         // http://127.0.0.1:8080/test/123 => {"userId":"123"}
         let obj = bind(123,"oxdadw","{}" )
         reply.send(obj)
+    })
+    // 合约提现到自己发布合约钱包接口
+    fastify.post('/withdraw1', async (request, reply) => {
+        let obj = await withdrawApi(request, reply)
+        console.log(obj,2)
+        reply.send(obj)
+        // return {...obj}
     })
     fastify.get('/bot/sendWin', (request, reply) => {
         // http://127.0.0.1:8080/test/123 => {"userId":"123"}

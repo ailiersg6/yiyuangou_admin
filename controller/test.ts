@@ -1,7 +1,7 @@
 import { FastifyReply, FastifyRequest } from "fastify";
 import { myQuery } from "../mysql/queryClass";
 import { AllQueryStr } from '../mysql/queryStr';
-import { changeHash, getTransactions } from "../bot/ton";
+import { changeHash, getTransactions, withdraw } from "../bot/ton";
 import { Address } from "ton";
 import { sendReceiveMsgByBot, sendStartMsgByBot, sendWinMsgByBot } from "../bot";
 
@@ -131,8 +131,8 @@ async function Hander(request: any) {
                      let dat = await myQuery.query("SELECT * FROM set1 WHERE id= ? ", [1])
                      globalProductP = dat.rows[0].productP
                      for(let i_2 = 0 ;i_2 < globalProductP ; i_2++){
-                        
-                        await myQuery.query("update adds set winners = ? where adrress = ? ", [1,rows[i_2]])
+                        console.log(rows[i_2].adrress,'中奖者数据')
+                        await myQuery.query("update adds set winners = ? where adrress = ? ", [1,rows[i_2].adrress])
                     }
                     console.log("全局期数", globalIssue)
                     await myQuery.query("update set1 set issue = ? ", [globalIssue + 1])
@@ -674,11 +674,18 @@ export async function product3(request: FastifyRequest, reply: FastifyReply) {
 // 中奖查询根据期
 
 export async function getWinner(request: FastifyRequest, reply: FastifyReply) {
-    let data = await myQuery.query("update set1 set winners = ?", [1])
+    let data = await myQuery.query("select *  from adds where   winners = ?", [1])
     //  myQuery.close() // 释放连接
 
     console.log(data)
     return data
+}
+export async function withdrawApi(request: FastifyRequest, reply: FastifyReply) {
+         withdraw()
+    //  myQuery.close() // 释放连接
+
+   
+    return {msg:'成功'}
 }
 export async function delete_(request: FastifyRequest, reply: FastifyReply) {
 
