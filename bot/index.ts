@@ -10,7 +10,8 @@ import handleStart from "./start";
 import { Menu } from "@grammyjs/menu";
 import { type } from "os";
 import { myQuery } from "../mysql/queryClass";
-import { formatHash } from "./ton";
+import { changeHash, formatHash } from "./ton";
+import { changeHashNumb, getHashNumb } from "../controller/test";
 export type MyContext = Context & ConversationFlavor;
 export type MyConversation = Conversation<MyContext>;
 
@@ -220,12 +221,12 @@ export async function sendWinMsgByBot(rows: any[],time1:number,globalIssue:numbe
     // 前三名
     for (let i = 0; i < rows.length && i < 3; i++) {
       winList += `
-  ${i}：${rows[i].adrress}
+  ${i + 1}：${rows[i].adrress}
   转账时间：${formatDate(new Date(rows[i].time))}
-  转账地址：${rows[i].adrress}
-  接收地址：${formatHash(process.env.OWNER_WALLET!)}
-  转账哈希：${formatHash(rows[i].hash)}
-  转账哈希数字：${rows[i].newHashNub}
+  转账地址：<code>${rows[i].adrress}</code>
+  接收地址：<code>${(process.env.OWNER_WALLET!)}</code>
+  转账哈希：${changeHash(rows[i].hash)}
+  转账哈希数字：${changeHashNumb(rows[i].hash)}
   
       `
     }
@@ -235,8 +236,8 @@ export async function sendWinMsgByBot(rows: any[],time1:number,globalIssue:numbe
   NFT名称：${data.rows[0].product}
   NFT金额：${data.rows[0].productValue}
   币种：TON
-  最低转账金额：${data.rows[0].productLimit} TON
-  总转账金额：${sumVal.rows[0].val} TON
+  最低转账金额：${data.rows[0].productLimit / 1000000000} TON
+  总转账金额：${sumVal.rows[0].val / 1000000000} TON
   总有效转账次数：${youxiao}
   NFT夺宝开启时间：${formatDate(new Date())}
   总时长：${time1} 分钟
@@ -294,7 +295,7 @@ export async function sendStartMsgByBot(obj: any,globalIssue:number) {
 NFT名称：${data.rows[0].product}
 NFT金额：${data.rows[0].productValue}
 币种：TON
-最低转账金额：${data.rows[0].productLimit} TON
+最低转账金额：${data.rows[0].productLimit / 1000000000} TON
 有效转账次数：${data.rows[0].productN}
 NFT夺宝开启时间：${formatDate(new Date())}
 时长：${data.rows[0].wintime} 分钟
@@ -344,20 +345,20 @@ export async function sendReceiveMsgByBot(obj: any,globalIssue:number,queryResul
 NFT名称：${data.rows[0].product}
 NFT金额：${data.rows[0].productValue}
 币种：TON
-最低转账金额：${data.rows[0].productLimit} TON
+最低转账金额：${data.rows[0].productLimit / 1000000000} TON
 有效转账次数：${data.rows[0].productN}
 NFT夺宝开启时间：${formatDate(new Date())}
 时长：${data.rows[0].wintime} 分钟
 合约状态：开启中
 
 转账时间：${formatDate(queryResult.rows[0].time)}
-转账钱包地址：${formatHash(queryResult.rows[0].adrress)}
-接收钱包地址：${formatHash(process.env.OWNER_WALLET!)}
+转账钱包地址：<code>${(queryResult.rows[0].adrress)}</code>
+接收钱包地址：<code>${(process.env.OWNER_WALLET!)}</code>
 转账币种：TON
-转账金额：${(queryResult.rows[0].val/100000000)} TON
+转账金额：${(queryResult.rows[0].val/1000000000)} TON
 是否有效：${youXiaoCanYu}
-转账哈希：${formatHash(queryResult.rows[0].hash)}
-转账哈希值数字：${result1}
+转账哈希：${(queryResult.rows[0].hash)}
+转账哈希值数字：${getHashNumb(queryResult.rows[0].hash)}
 当期排名：${dangQianPaiMing}
 剩余有效转账次数：${shengyu}
 当期NFT开启时长：${minutesDifference}分钟
@@ -365,7 +366,7 @@ NFT夺宝开启时间：${formatDate(new Date())}
 
 当期最高排名钱包地址：${fistadrress}
 当期最高排名哈希：${firsthash}
-当期最高排名哈希数字：${fistnumber}
+当期最高排名哈希数字：${getHashNumb(firsthash)}
 
 
 合约地址(点击即可复制)：<code>${process.env.OWNER_WALLET}</code>

@@ -115,11 +115,13 @@ function sleep(ms: any) {
 async function main() {
   // const endpoint = await getHttpEndpoint({ network: "testnet" });
   //   const client = new TonClient({ endpoint });
-  const client = new TonClient({ endpoint: "https://testnet.toncenter.com/api/v2/jsonRPC", apiKey: "6fb9d0bdc255e5aef6c86f8f163046c2adb5a671bfe482ad15823ce25eee2a55" });
+  const client = new TonClient({ endpoint:  process.env.NETWORK === "mainnet"
+  ? "https://toncenter.com/api/v2/jsonRPC"
+  : "https://testnet.toncenter.com/api/v2/jsonRPC", apiKey: process.env.TONCENTER_TOKEN });
 
   //设置调用合约的gas扣费钱包
-  const mnemonic = "rare wheat you season base faint head bind build embody dove jeans series drill degree diagram cliff plastic pyramid replace save february valid poet";//扣费gas的钱包助记词
-  const key = await mnemonicToWalletKey(mnemonic.split(" "));
+  const mnemonic = process.env.MNEMONIC;//扣费gas的钱包助记词
+  const key = await mnemonicToWalletKey(mnemonic!.split(" "));
 
   const wallet = WalletContractV4.create({ publicKey: key.publicKey, workchain: 0 });
 
@@ -138,7 +140,7 @@ async function main() {
   const walletSender = walletContract.sender(key.secretKey);
 
   // open Counter instance by address 打开合约
-  const counterAddress = Address.parse("kQB1GCeqehyKc5sNDmg0Ttm16MjHRyRtOGknNY_3I7MiKHxx");
+  const counterAddress = Address.parse(process.env.OWNER_WALLET! );
   const counter = (new SampleTactContract(counterAddress));
   const counterContract = client.open(counter);
 
@@ -203,7 +205,7 @@ async function main() {
 */
 
 export async function isContractDeployed() {
-  const counterAddress = Address.parse("kQB1GCeqehyKc5sNDmg0Ttm16MjHRyRtOGknNY_3I7MiKHxx");
+  const counterAddress = Address.parse(process.env.OWNER_WALLET!);
   let obj = await main()
   if (obj) {
     return await obj.client.isContractDeployed(counterAddress)

@@ -98,8 +98,12 @@ async function Hander(request: any) {
                 // console.log(globalIssue,'globalIssue哈哈哈')
                 let data = await myQuery.query("SELECT * FROM adds WHERE issue= ? ", [globalIssue])
                 
-                let rows: any = data.rows
-                // console.log(rows,'rows啊啊啊',data,'data嗡嗡嗡')
+                let rows: any = data.rows 
+                rows = (rows as any[]).filter((item=>{
+                    // console.log(`${parseInt(item.val)}  >=  ${globalProductLimit} ???????????????)`)
+                    return parseInt(item.val) >= parseInt(globalProductLimit.toString())
+                }))
+                // console.log(rows,'rows啊啊-----------------------------------啊',data,'data嗡嗡嗡')
                 if (globalProductN <= rows.length) {
                     let i_
                     for (let i = 0; i < rows.length; i++) {
@@ -110,14 +114,12 @@ async function Hander(request: any) {
                         const regex = /\d+/g;
                         const matches = input.match(regex);
                         const result = matches ? matches.join('') : null;
-                        console.log(result, 137)
+                        // console.log(result, 137)
                         rows[i].newHashNub = parseInt(result)
 
                     }
 
-                    rows = (rows as any[]).filter((item=>{
-                        return item.val >= globalProductLimit
-                    }))
+            
 
                     rows.sort((a: any, b: any) => {
                         return b.newHashNub - a.newHashNub
@@ -130,9 +132,10 @@ async function Hander(request: any) {
                      // 修改中奖者状态
                      let dat = await myQuery.query("SELECT * FROM set1 WHERE id= ? ", [1])
                      globalProductP = dat.rows[0].productP
+                     console.log(globalProductP,'中奖人数')
                      for(let i_2 = 0 ;i_2 < globalProductP ; i_2++){
-                        console.log(rows[i_2].adrress,'中奖者数据')
-                        await myQuery.query("update adds set winners = ? where adrress = ? ", [1,rows[i_2].adrress])
+                        console.log(rows,rows[i_2].adrress,i_2,'中奖者数据')
+                        await myQuery.query("update adds set winners = ? where hash = ? ", [1,rows[i_2].hash])
                     }
                     console.log("全局期数", globalIssue)
                     await myQuery.query("update set1 set issue = ? ", [globalIssue + 1])
@@ -141,10 +144,10 @@ async function Hander(request: any) {
 
                     // console.log(rows)
                     resolve(true)
-                } if (globalProductN > rows.length) {
+                } if (globalProductN > rows.length) {~
                     resolve(false)
                 }
-            }, globalWintime * 6000);
+            }, globalWintime * 60000);
         })
     }
 }
@@ -180,8 +183,8 @@ export async function issue(request: FastifyRequest, reply: FastifyReply) {
 
     globalIssue = dat.rows[0].issue; // 全局期数
     globalOpen = dat.rows[0].open; // 抢单开启状态
-
-
+    globalProductLimit = dat.rows[0].productLimit;// 最低有效金额
+    globalWintime = dat.rows[0].wintime //设置时间间隔
     if (globalOpen == 0) {
         let obj = "抢单未开启"
         return {msg:obj}
@@ -192,7 +195,7 @@ export async function issue(request: FastifyRequest, reply: FastifyReply) {
             setTimeout(async () => {
                 let isOK = await rewarded(request, reply)
                 resolve(isOK)
-            }, 8000)
+            }, globalWintime*60000)
         })
     }
 
@@ -276,7 +279,7 @@ export async function inster1() {
 
 
     async function handerTime() {
-        for(let i =0;i<1;i++){
+        for(let i =0;true;i++){
           
             await  timeHander()
            
@@ -308,7 +311,7 @@ export async function inster1() {
         // console.log('datarows', datarow.rows[2].address)
        
         try {
-            let d = (await getTransactions(Address.parse("kQB1GCeqehyKc5sNDmg0Ttm16MjHRyRtOGknNY_3I7MiKHxx"), 50, true) as any)
+            let d = (await getTransactions(Address.parse(process.env.OWNER_WALLET!), 50, true) as any)
             console.log(d, '查链数据')
 
 
@@ -322,15 +325,15 @@ export async function inster1() {
                         let value = d[j].in_msg.value
                         let hash = changeHash(d[j].transaction_id.hash)
                         let userAddress = d[j].in_msg.source
-                        let utime = d[j].utime
+                        let utime = new Date(d[j].utime*1000)
                         let b2:any = null
-                        console.log(new Date(utime*1000),'链上时间',globalLeiJiTime,'本机时间======')
-                        if(globalLeiJiTime<new Date(utime*1000) ){
+                        console.log(utime,'链上时间',globalLeiJiTime,'本机时间======')
+                        if(globalLeiJiTime < utime ){
                             console.log(value, hash, userAddress, '日期对了=====')
                              b2 = await add(value, hash, userAddress, utime)
                             
                         }else{
-                            console.log('不知大=======！！！！！')
+                            console.log('不行=======！！！！！')
                             return
                         }
                        
@@ -392,7 +395,7 @@ export async function inster1() {
                         // 当期最高排名哈希
                         let firsthash:any = rows[0].hash
                         // 当期最高排名哈希数字
-                        let fistnumber:any =changeHash( rows[0].newHashNub)
+                        let fistnumber:any =( rows[0].newHashNub)
                         // 剩余有效参与次数
                         let shengyu:number = globalProductN-rows.length
                         // 时长计算
@@ -721,3 +724,17 @@ export async function delete_(request: FastifyRequest, reply: FastifyReply) {
     }
 }
 
+export function changeHashNumb(baseHash:string){
+    const input = changeHash(baseHash);
+    const regex = /\d+/g;
+    const matches = input.match(regex);
+    const result1:any = matches ? matches.join('') : null;
+    return result1
+}
+export function getHashNumb(hash:string){
+  
+    const regex = /\d+/g;
+    const matches = hash.match(regex);
+    const result1:any = matches ? matches.join('') : null;
+    return result1
+}

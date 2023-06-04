@@ -28,7 +28,7 @@ server.setErrorHandler((error, request, reply) => {
 });
 
 // 接收转账 
-// inster1()
+inster1()
 
 initBot() // 初始化机器人
 
