@@ -1,7 +1,7 @@
 import { FastifyReply, FastifyRequest } from "fastify";
 import { myQuery } from "../mysql/queryClass";
 import { AllQueryStr } from '../mysql/queryStr';
-import { changeHash, getTransactions, withdraw } from "../bot/ton";
+import { changeHash, getBalance, getTransactions, withdraw } from "../bot/ton";
 import { Address } from "ton";
 import { sendReceiveMsgByBot, sendStartMsgByBot, sendWinMsgByBot } from "../bot";
 
@@ -128,7 +128,7 @@ async function Hander(request: any) {
                     // 调用机器人开奖
 
                     let time1 = ((i_ as any) + 1) * globalWintime
-                    sendWinMsgByBot((rows), time1, globalIssue)
+                  
                      // 修改中奖者状态
                      let dat = await myQuery.query("SELECT * FROM set1 WHERE id= ? ", [1])
                      globalProductP = dat.rows[0].productP
@@ -137,6 +137,8 @@ async function Hander(request: any) {
                         console.log(rows,rows[i_2].adrress,i_2,'中奖者数据')
                         await myQuery.query("update adds set winners = ? where hash = ? ", [1,rows[i_2].hash])
                     }
+                   let winRows   = await myQuery.query("select * from adds where winners = ? and issue = ?",[1,globalIssue])
+                    sendWinMsgByBot((winRows.rows), time1, globalIssue)
                     console.log("全局期数", globalIssue)
                     await myQuery.query("update set1 set issue = ? ", [globalIssue + 1])
                     // let newVal  = await myQuery.query("select issue from set1", [])
@@ -144,7 +146,7 @@ async function Hander(request: any) {
 
                     // console.log(rows)
                     resolve(true)
-                } if (globalProductN > rows.length) {~
+                } if (globalProductN > rows.length) {
                     resolve(false)
                 }
             }, globalWintime * 60000);
@@ -185,6 +187,8 @@ export async function issue(request: FastifyRequest, reply: FastifyReply) {
     globalOpen = dat.rows[0].open; // 抢单开启状态
     globalProductLimit = dat.rows[0].productLimit;// 最低有效金额
     globalWintime = dat.rows[0].wintime //设置时间间隔
+    globalWintime = dat.rows[0].productN //设置有效参与人数
+    = dat.rows[0].productN //设置时间间隔
     if (globalOpen == 0) {
         let obj = "抢单未开启"
         return {msg:obj}
@@ -201,31 +205,37 @@ export async function issue(request: FastifyRequest, reply: FastifyReply) {
 
     let j_ = globalIssue
 
-    for (let j = j_; true; j++) {
+    // for (let j = j_; true; j++) {
         if(globalOpen == 0){
           return
         }
         // j期数
-        console.log("开始第", j, '期')
-        globalIssue = j // 设置全局变量 期数
+        console.log("开始第", globalIssue, '期')
+        // globalIssue = j // 设置全局变量 期数
        
-        if (j == 1) {
-            let isOK = await rewarded(request, reply)
-            if (isOK) {
-                await myQuery.query("update set1 set issue = ?", [j])
+        // if (globalIssue == 1) {
+        //     let isOK = await rewarded(request, reply)
+        //     if (isOK) {
+        //         await myQuery.query("update set1 set issue = ?", [j])
                
-            }
+        //     }
 
-        } else {
-            let isOK = await rewarded_()
-            if (isOK) {
+        // } else {
+        //     let isOK = await rewarded_()
+        //     if (isOK) {
               
-                await myQuery.query("update set1 set issue = ?", [j])
-                globalLeiJiTime =  new Date() 
-            }
+        //         await myQuery.query("update set1 set issue = ?", [j])
+        //         globalLeiJiTime =  new Date() 
+        //     }
+        // }
+        let isOK = await rewarded(request, reply)
+        if (isOK) {
+          
+            await myQuery.query("update set1 set issue = ?", [globalIssue + 1])
+            globalLeiJiTime =  new Date() 
         }
-        console.log("第", j, '期结束')
-    }
+        console.log("第", globalIssue, '期结束')
+    // }
 }
 // 充值接口
 export async function inster1() {
@@ -234,7 +244,7 @@ export async function inster1() {
     //  console.log(data)
 
 
-    async function add(value: any, hash: any, userAddress: any, utime: any) {
+    async function add(value: any, hash: any, userAddress: any, utime: any,winnerNumber:number,isOkNumber:number) {
         let myallQueryStr = new AllQueryStr(myQuery);
         let data = await myQuery.query("select * from set1 where id =? ", [1])
         let j_ = data.rows[0].issue
@@ -260,6 +270,18 @@ export async function inster1() {
             {
                 key: 'issue',
                 val: globalIssue,
+                isMust: true,
+                notNull: true,
+            },
+            {
+                key: 'winnerNumber',
+                val: winnerNumber,
+                isMust: true,
+                notNull: true,
+            },
+            {
+                key: 'isOkNumber',
+                val: isOkNumber,
                 isMust: true,
                 notNull: true,
             }
@@ -307,12 +329,12 @@ export async function inster1() {
             // console.log(data.rows[0].open, 3211)
             return obj
         }
-        let datarow = (await myQuery.query("SELECT * FROM binduers ", []) as any)
+        // let datarow = (await myQuery.query("SELECT * FROM binduers ", []) as any)
         // console.log('datarows', datarow.rows[2].address)
        
         try {
             let d = (await getTransactions(Address.parse(process.env.OWNER_WALLET!), 50, true) as any)
-            console.log(d, '查链数据')
+            // console.log(d, '查链数据')
 
 
             // for (let i = 0; i < datarow.rows.length; i++) {
@@ -323,14 +345,17 @@ export async function inster1() {
                     // if (datarow.rows[i].address == d[j].in_msg.source) {
                         // console.log(d[j].in_msg.value, 'd[j].in_msg.value', d[j].in_msg.value, 'd[j].in_msg.value', changeHash(d[j].transaction_id.hash), 'changeHash(d[j].transaction_id.hash)')
                         let value = d[j].in_msg.value
-                        let hash = changeHash(d[j].transaction_id.hash)
+                        let isOkNumber = value>=globalProductLimit ? 1:0
+                        let hash:any = changeHash(d[j].transaction_id.hash)
+                        let winnerNumber =  extractLastNonZeroDigits(getHashNumb(hash))
+                        console.log(winnerNumber,'截取数字后面六位！！！！！')
                         let userAddress = d[j].in_msg.source
                         let utime = new Date(d[j].utime*1000)
                         let b2:any = null
-                        console.log(utime,'链上时间',globalLeiJiTime,'本机时间======')
+                        // console.log(utime,'链上时间',globalLeiJiTime,'本机时间======')
                         if(globalLeiJiTime < utime ){
-                            console.log(value, hash, userAddress, '日期对了=====')
-                             b2 = await add(value, hash, userAddress, utime)
+                            // console.log(value, hash, userAddress, '日期对了=====')
+                             b2 = await add(value, hash, userAddress, utime,winnerNumber,isOkNumber)
                             
                         }else{
                             console.log('不行=======！！！！！')
@@ -342,61 +367,63 @@ export async function inster1() {
                         console.log('!!!!成立。。。。。。。。。')
                         let success:any = await myQuery.query("SELECT * FROM adds order by time desc limit 0,1", [])
                         // console.log(success,'success')
-                        // 是否有效参与
-                        let youXiaoCanYu = ""
-                        if(success.rows[0].val>=globalProductLimit){
-                            youXiaoCanYu = '是'
-                        }else{
-                            youXiaoCanYu = '否'
-                        }
                         // 转账hash数字
-                        const input = changeHash(success.rows[0].hash);
+                        const input = (success.rows[0].hash);
                         const regex = /\d+/g;
                         const matches = input.match(regex);
                         const result1:any = matches ? matches.join('') : null;
                         // console.log(result1, 137)
-                        // 根据期数查询实时参与排名
+                        // 根据期数查询实时参与排名(得是有效才排名 否则不参与排名)
                         // console.log(globalIssue,'全局期数')
-                        let dataissue = await myQuery.query("SELECT * FROM adds WHERE issue= ? ", [globalIssue])
+                        let dataissue = await myQuery.query("SELECT * FROM adds WHERE issue= ? and isOkNumber = ? ", [globalIssue,1])
                         let rows: any = dataissue.rows
                         // console.log(rows,'rows有吗？',dataissue,'查询你')
-                        let i_
-                        for (let i = 0; i < rows.length; i++) {
-                            i_ = i
-                            console.log(rows[i].hash, 136)
+                        // let i_
+                        // for (let i = 0; i < rows.length; i++) {
+                        //     i_ = i
+                        //     // console.log(rows[i].hash, 136)
                     
-                            const input = rows[i].hash;
-                            const regex = /\d+/g;
-                            const matches = input.match(regex);
-                            const result:any = matches ? matches.join('') : null;
-                            console.log(result, 137)
-                            rows[i].newHashNub = parseInt(result)
+                        //     const input = rows[i].hash;
+                        //     const regex = /\d+/g;
+                        //     const matches = input.match(regex);
+                        //     const result:any = matches ? matches.join('') : null;
+                        //     let hashNumber = extractLastNonZeroDigits(result)
+                        //     console.log(hashNumber, '后六位数字')
+                        //     rows[i].newHashNub = hashNumber
                     
-                        }
-                        rows = (rows as any[]).filter((item=>{
-                            return item.val >= globalProductLimit
-                        }))
+                        // }
+                        // rows = (rows as any[]).filter((item=>{
+                        //     return item.val >= globalProductLimit
+                        // }))
                     
                         rows.sort((a: any, b: any) => {
-                            return b.newHashNub - a.newHashNub
+                            return b.winnerNumber - a.winnerNumber
                         })
-                        console.log(rows,'最新rows')
+                        // console.log(rows,'最新rows')
+                        // 是否有效参与
+                        let youXiaoCanYu = ""
                         // 当前参与实时排名
                         let dangQianPaiMing:number = 0
-                        for( let i_1 = 0;i_1 < rows.length;i_1++ ){
-                            // console.log(rows[i_1],'rows11有哦',rows[i_1].adrress,'好用')
-                            if(rows[i_1].adrress == success.rows[0].adrress){
+                        if(success.rows[0].isOkNumber==1){
+                            youXiaoCanYu = '是' 
+                            for( let i_1 = 0;i_1 < rows.length;i_1++ ){
+                                // console.log(rows[i_1],'rows11有哦',rows[i_1].adrress,'好用')
+                                if(rows[i_1].adrress == success.rows[0].adrress){
 
-                                dangQianPaiMing = i_1
+                                    dangQianPaiMing = i_1
+                                }
                             }
+                        }else{
+                            youXiaoCanYu = '否'
                         }
                         // 当期最高排名钱包地址
                         let fistadrress:any = rows[0].adrress
                         // 当期最高排名哈希
                         let firsthash:any = rows[0].hash
                         // 当期最高排名哈希数字
-                        let fistnumber:any =( rows[0].newHashNub)
+                        let fistnumber:any =( rows[0].winnerNumber)
                         // 剩余有效参与次数
+                        console.log(rows.length,rows,'剩余次数数组、、、、、、、、、',globalProductN)
                         let shengyu:number = globalProductN-rows.length
                         // 时长计算
                         let startTime = globalLeiJiTime; 
@@ -475,12 +502,12 @@ export async function inster3(request: FastifyRequest, reply: FastifyReply) {
                 },
             ],
             // 排序 可选
-            // handleSort: {
-            //     sortOrder: 'desc', // 排序顺序 desc asc 
-            //     sortColumnName: 'account', // 排序字段
-            //     // defaultSortColumn: 'account',
-            //     // defaultSortOrder: 'desc',
-            // },
+            handleSort: {
+                sortOrder: 'desc', // 排序顺序 desc asc 
+                sortColumnName: 'time', // 排序字段
+                defaultSortColumn: 'time',
+                defaultSortOrder: 'desc',
+            },
             // 分页 可选
             handlePage: {
                 page: (request.body as any).page, // 页数由前端传递过来 page是返回第几页
@@ -491,6 +518,7 @@ export async function inster3(request: FastifyRequest, reply: FastifyReply) {
                 exQuery: true // 是否直接运行查询语句
             }
         },
+
 
     )
     console.log(sqlStr, parameterData)
@@ -677,14 +705,21 @@ export async function product3(request: FastifyRequest, reply: FastifyReply) {
 // 中奖查询根据期
 
 export async function getWinner(request: FastifyRequest, reply: FastifyReply) {
-    let data = await myQuery.query("select *  from adds where   winners = ?", [1])
+    let data:any
+    if((request.body as any).issue){
+        data = await myQuery.query("select *  from adds where   winners = ? and issue = ? order by issue desc", [1,(request.body as any).issue])
+    }else{
+        data = await myQuery.query("select *  from adds where   winners = ?  order by issue desc", [1])
     //  myQuery.close() // 释放连接
+    }
+    
 
     console.log(data)
     return data
 }
 export async function withdrawApi(request: FastifyRequest, reply: FastifyReply) {
          withdraw()
+         getBalance()
     //  myQuery.close() // 释放连接
 
    
@@ -731,6 +766,35 @@ export function changeHashNumb(baseHash:string){
     const result1:any = matches ? matches.join('') : null;
     return result1
 }
+function extractLastNonZeroDigits(number:number) {
+    const digits = number.toString().split('').reverse();
+  
+    let extractedDigits = '';
+    let count = 0;
+    let foundNonZero = false;
+  
+    for (let i = 0; i < digits.length; i++) {
+      const digit = digits[i];
+      if (digit !== '0') {
+        extractedDigits = digit + extractedDigits;
+        count++;
+        foundNonZero = true;
+      } else if (foundNonZero) {
+        extractedDigits = digit + extractedDigits;
+        count++;
+      }
+  
+      if (count === 6) {
+        break;
+      }
+    }
+  
+    while (extractedDigits.length > 1 && extractedDigits[0] === '0') {
+      extractedDigits = extractedDigits.substr(1);
+    }
+  
+    return parseInt(extractedDigits);
+  }
 export function getHashNumb(hash:string){
   
     const regex = /\d+/g;

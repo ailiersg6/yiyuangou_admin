@@ -16,7 +16,7 @@ export type MyContext = Context & ConversationFlavor;
 export type MyConversation = Conversation<MyContext>;
 
 
-let gropId: number = 0; // 群id
+let gropId: number = -916038823; // 群id
 
 // 创建一个简单的菜单。
 const menu = new Menu("my-menu-identifier")
@@ -219,13 +219,13 @@ export async function sendWinMsgByBot(rows: any[],time1:number,globalIssue:numbe
 
     let winList = ``
     // 前三名
-    for (let i = 0; i < rows.length && i < 3; i++) {
+    for (let i = 0; i < rows.length ; i++) {
       winList += `
-  ${i + 1}：${rows[i].adrress}
+ 
   转账时间：${formatDate(new Date(rows[i].time))}
   转账地址：<code>${rows[i].adrress}</code>
   接收地址：<code>${(process.env.OWNER_WALLET!)}</code>
-  转账哈希：${changeHash(rows[i].hash)}
+  转账哈希：<code>${changeHash(rows[i].hash)}</code>
   转账哈希数字：${changeHashNumb(rows[i].hash)}
   
       `
@@ -245,7 +245,7 @@ export async function sendWinMsgByBot(rows: any[],time1:number,globalIssue:numbe
 
 
 
-  以下为当期前三名地址及对应详情
+  以下为当期中奖者：
 ${winList}
 
  注！！！
@@ -357,16 +357,16 @@ NFT夺宝开启时间：${formatDate(new Date())}
 转账币种：TON
 转账金额：${(queryResult.rows[0].val/1000000000)} TON
 是否有效：${youXiaoCanYu}
-转账哈希：${(queryResult.rows[0].hash)}
-转账哈希值数字：${getHashNumb(queryResult.rows[0].hash)}
-当期排名：${dangQianPaiMing}
+转账哈希：<code>${(queryResult.rows[0].hash)}</code>
+转账哈希值数字：${(queryResult.rows[0].winnerNumber)}
+当期排名：${ queryResult.rows[0].isOkNumber == 1? (dangQianPaiMing+1):'无效参与'}
 剩余有效转账次数：${shengyu}
 当期NFT开启时长：${minutesDifference}分钟
 
 
-当期最高排名钱包地址：${fistadrress}
-当期最高排名哈希：${firsthash}
-当期最高排名哈希数字：${getHashNumb(firsthash)}
+当期最高排名钱包地址：<code>${fistadrress}</code>
+当期最高排名哈希：<code>${firsthash}</code>
+当期最高排名哈希数字：${(fistnumber)}
 
 
 合约地址(点击即可复制)：<code>${process.env.OWNER_WALLET}</code>
@@ -393,11 +393,12 @@ NFT夺宝开启时间：${formatDate(new Date())}
 
 function formatDate(date:Date) {
   const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, '0');
-  const day = String(date.getDate()).padStart(2, '0');
-  const hours = String(date.getHours()).padStart(2, '0');
-  const minutes = String(date.getMinutes()).padStart(2, '0');
-  const seconds = String(date.getSeconds()).padStart(2, '0');
-  
-  return `${year} ${hours}:${minutes}:${seconds}`;
+	const month = String(date.getMonth() + 1).padStart(2, '0');
+	const day = String(date.getDate()).padStart(2, '0');
+	const hours = String(date.getHours()).padStart(2, '0');
+	const minutes = String(date.getMinutes()).padStart(2, '0');
+	const seconds = String(date.getSeconds()).padStart(2, '0');
+
+	const formattedDate = `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+	return formattedDate;
 }

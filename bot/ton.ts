@@ -224,7 +224,7 @@ export async function getBalance() {
   let obj = await main()
   if (obj) {
     let d = await obj.counterContract.getBalance()
-
+console.log('getBalance =',d)
     return d.toString()
   }
 
@@ -237,6 +237,8 @@ export async function getBalance() {
 export async function withdraw() {
   let obj = await main()
   if (obj) {
+   let d= await obj.counterContract.getDeployer()
+   console.log(d)
     await obj.counterContract.send(obj.walletSender, { value: 10000000n }, "withdraw all");
   }
 
