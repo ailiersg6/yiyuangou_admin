@@ -19,7 +19,7 @@ console.log('当前环境=>',process.env.NETWORK);
 
 const server = fastify()
 
-// initBot() // 初始化机器人
+ initBot() // 初始化机器人
 
 
 
