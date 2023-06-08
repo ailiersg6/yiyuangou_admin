@@ -13,7 +13,7 @@ let globalProductN = 2; // 有效参与人数
 let globalProductP = 1; // 中奖人数
 let globalProductValue = 1; // 产品价值 
 let globalLeiJiTime = new Date()
-
+let globalRewardedNumber = 1;// 开奖循环次数
 export async function test1(request: FastifyRequest, reply: FastifyReply) {
     // 1原生方式
     // let data = await  myQuery.query("select userid from user where id = ?",[1]) 
@@ -96,51 +96,53 @@ async function Hander(request: any) {
                 // 有效次数
 
                 // console.log(globalIssue,'globalIssue哈哈哈')
-                let data = await myQuery.query("SELECT * FROM adds WHERE issue= ? ", [globalIssue])
+                let data = await myQuery.query("SELECT * FROM adds WHERE issue= ? and isOkNumber = ? ", [globalIssue,1])
                 
                 let rows: any = data.rows 
-                rows = (rows as any[]).filter((item=>{
-                    // console.log(`${parseInt(item.val)}  >=  ${globalProductLimit} ???????????????)`)
-                    return parseInt(item.val) >= parseInt(globalProductLimit.toString())
-                }))
+                // rows = (rows as any[]).filter((item=>{
+                //     // console.log(`${parseInt(item.val)}  >=  ${globalProductLimit} ???????????????)`)
+                //     return parseInt(item.val) >= parseInt(globalProductLimit.toString())
+                // }))
                 // console.log(rows,'rows啊啊-----------------------------------啊',data,'data嗡嗡嗡')
-                if (globalProductN <= rows.length) {
-                    let i_
-                    for (let i = 0; i < rows.length; i++) {
-                        i_ = i
-                        console.log(rows[i].hash, 136)
 
-                        const input = rows[i].hash;
-                        const regex = /\d+/g;
-                        const matches = input.match(regex);
-                        const result = matches ? matches.join('') : null;
-                        // console.log(result, 137)
-                        rows[i].newHashNub = parseInt(result)
+                if (globalProductN == rows.length) {
+                    // let i_
+                    // for (let i = 0; i < rows.length; i++) {
+                    //     i_ = i
+                    //     console.log(rows[i].hash, 136)
 
-                    }
+                    //     const input = rows[i].hash;
+                    //     const regex = /\d+/g;
+                    //     const matches = input.match(regex);
+                    //     const result = matches ? matches.join('') : null;
+                    //     // console.log(result, 137)
+                    //     rows[i].newHashNub = parseInt(result)
+
+                    // }
 
             
 
                     rows.sort((a: any, b: any) => {
-                        return b.newHashNub - a.newHashNub
+                        return b.winnerNumber - a.winnerNumber
                     })
                    
                     // 调用机器人开奖
 
-                    let time1 = ((i_ as any) + 1) * globalWintime
+                    let time1 = globalRewardedNumber * globalWintime
                   
                      // 修改中奖者状态
                      let dat = await myQuery.query("SELECT * FROM set1 WHERE id= ? ", [1])
+                    //  中奖人数
                      globalProductP = dat.rows[0].productP
-                     console.log(globalProductP,'中奖人数')
+                    //  console.log(globalProductP,'中奖人数')
                      for(let i_2 = 0 ;i_2 < globalProductP ; i_2++){
-                        console.log(rows,rows[i_2].adrress,i_2,'中奖者数据')
+                        // console.log(rows,rows[i_2].adrress,i_2,'中奖者数据')
                         await myQuery.query("update adds set winners = ? where hash = ? ", [1,rows[i_2].hash])
                     }
                    let winRows   = await myQuery.query("select * from adds where winners = ? and issue = ?",[1,globalIssue])
                     sendWinMsgByBot((winRows.rows), time1, globalIssue)
-                    console.log("全局期数", globalIssue)
-                    await myQuery.query("update set1 set issue = ? ", [globalIssue + 1])
+                    // console.log("全局期数", globalIssue)
+                    // await myQuery.query("update set1 set issue = ? ", [globalIssue + 1])
                     // let newVal  = await myQuery.query("select issue from set1", [])
                     // console.log('newVal',newVal)
 
@@ -155,12 +157,12 @@ async function Hander(request: any) {
 }
 export async function rewarded(request: FastifyRequest, reply: FastifyReply) {
     return new Promise(async (resolve) => {
-
+        globalRewardedNumber = 1;
         // 发送开始抢单提示
         sendStartMsgByBot("", globalIssue)
 
         for (let i = 1; true; i++) {
-          
+            globalRewardedNumber = i
             console.log(`第${globalIssue}期，第`, i, "次抢单")
             let isok = await Hander(request)
             if (isok) {
@@ -187,8 +189,9 @@ export async function issue(request: FastifyRequest, reply: FastifyReply) {
     globalOpen = dat.rows[0].open; // 抢单开启状态
     globalProductLimit = dat.rows[0].productLimit;// 最低有效金额
     globalWintime = dat.rows[0].wintime //设置时间间隔
-    globalWintime = dat.rows[0].productN //设置有效参与人数
-    = dat.rows[0].productN //设置时间间隔
+    globalProductN = dat.rows[0].productN //设置有效参与人数
+    // = dat.rows[0].productN //设置时间间隔
+    globalProductN 
     if (globalOpen == 0) {
         let obj = "抢单未开启"
         return {msg:obj}
@@ -315,7 +318,7 @@ export async function inster1() {
                 let d=  await  addfc()
                 resolve(d)
     
-            }, 10000);
+            }, 5000);
           
         })
     }
@@ -348,7 +351,7 @@ export async function inster1() {
                         let isOkNumber = value>=globalProductLimit ? 1:0
                         let hash:any = changeHash(d[j].transaction_id.hash)
                         let winnerNumber =  extractLastNonZeroDigits(getHashNumb(hash))
-                        console.log(winnerNumber,'截取数字后面六位！！！！！')
+                        // console.log(winnerNumber,'截取数字后面六位！！！！！')
                         let userAddress = d[j].in_msg.source
                         let utime = new Date(d[j].utime*1000)
                         let b2:any = null
@@ -365,7 +368,7 @@ export async function inster1() {
                        console.log(b2,'b2')
                        if(b2 == false){
                         console.log('!!!!成立。。。。。。。。。')
-                        let success:any = await myQuery.query("SELECT * FROM adds order by time desc limit 0,1", [])
+                        let success:any = await myQuery.query("SELECT * FROM adds where hash = ?", [hash])
                         // console.log(success,'success')
                         // 转账hash数字
                         const input = (success.rows[0].hash);
@@ -374,10 +377,22 @@ export async function inster1() {
                         const result1:any = matches ? matches.join('') : null;
                         // console.log(result1, 137)
                         // 根据期数查询实时参与排名(得是有效才排名 否则不参与排名)
+                        // 是否有效参与
+                        let youXiaoCanYu = ""
+                        
+                        
+                        if(success.rows[0].isOkNumber==1){
+                            youXiaoCanYu = '是' 
+                        }else{
+                            youXiaoCanYu = '否'
+                        }
                         // console.log(globalIssue,'全局期数')
-                        let dataissue = await myQuery.query("SELECT * FROM adds WHERE issue= ? and isOkNumber = ? ", [globalIssue,1])
-                        let rows: any = dataissue.rows
-                        // console.log(rows,'rows有吗？',dataissue,'查询你')
+                        let dataissue = await myQuery.query("SELECT * FROM adds WHERE issue= ? and isOkNumber = ?  order by winnerNumber desc ", [globalIssue,1])
+                        let rows: any[] = dataissue.rows
+
+                        if(rows.length){
+                            // 有效转账金额
+  // console.log(rows,'rows有吗？',dataissue,'查询你')
                         // let i_
                         // for (let i = 0; i < rows.length; i++) {
                         //     i_ = i
@@ -396,26 +411,19 @@ export async function inster1() {
                         //     return item.val >= globalProductLimit
                         // }))
                     
-                        rows.sort((a: any, b: any) => {
-                            return b.winnerNumber - a.winnerNumber
-                        })
-                        // console.log(rows,'最新rows')
-                        // 是否有效参与
-                        let youXiaoCanYu = ""
+                        // rows.sort((a: any, b: any) => {
+                        //     return b.winnerNumber - a.winnerNumber
+                        // })
+                        console.log(rows,'数字排名？？？============')
                         // 当前参与实时排名
-                        let dangQianPaiMing:number = 0
-                        if(success.rows[0].isOkNumber==1){
-                            youXiaoCanYu = '是' 
-                            for( let i_1 = 0;i_1 < rows.length;i_1++ ){
-                                // console.log(rows[i_1],'rows11有哦',rows[i_1].adrress,'好用')
-                                if(rows[i_1].adrress == success.rows[0].adrress){
+                        let dangQianPaiMing:number = -1
+                
 
-                                    dangQianPaiMing = i_1
-                                }
-                            }
-                        }else{
-                            youXiaoCanYu = '否'
-                        }
+                      dangQianPaiMing =  rows.findIndex(item=>{
+                            return item.hash == success.rows[0].hash
+                        })
+
+                        // console.log(rows,'最新rows')
                         // 当期最高排名钱包地址
                         let fistadrress:any = rows[0].adrress
                         // 当期最高排名哈希
@@ -423,7 +431,7 @@ export async function inster1() {
                         // 当期最高排名哈希数字
                         let fistnumber:any =( rows[0].winnerNumber)
                         // 剩余有效参与次数
-                        console.log(rows.length,rows,'剩余次数数组、、、、、、、、、',globalProductN)
+                        // console.log(rows.length,rows,'剩余次数数组、、、、、、、、、',globalProductN)
                         let shengyu:number = globalProductN-rows.length
                         // 时长计算
                         let startTime = globalLeiJiTime; 
@@ -434,10 +442,70 @@ export async function inster1() {
                         // 计算差值（单位为毫秒） 
                         let minutesDifference:number = Math.floor(timeDifference / (1000 * 60)); 
                         // 将差值转换为分钟数 
-                        console.log(minutesDifference); // 输出分钟数间隔
+                        console.log('输出分钟数间隔',minutesDifference); // 输出分钟数间隔
                         
                         sendReceiveMsgByBot('',globalIssue,success,youXiaoCanYu,result1,dangQianPaiMing,fistadrress,firsthash,
                         fistnumber,shengyu,minutesDifference)
+                        }else{
+                            // 无效转账金额
+
+                              // console.log(rows,'rows有吗？',dataissue,'查询你')
+                        // let i_
+                        // for (let i = 0; i < rows.length; i++) {
+                        //     i_ = i
+                        //     // console.log(rows[i].hash, 136)
+                    
+                        //     const input = rows[i].hash;
+                        //     const regex = /\d+/g;
+                        //     const matches = input.match(regex);
+                        //     const result:any = matches ? matches.join('') : null;
+                        //     let hashNumber = extractLastNonZeroDigits(result)
+                        //     console.log(hashNumber, '后六位数字')
+                        //     rows[i].newHashNub = hashNumber
+                    
+                        // }
+                        // rows = (rows as any[]).filter((item=>{
+                        //     return item.val >= globalProductLimit
+                        // }))
+                    
+                        // rows.sort((a: any, b: any) => {
+                        //     return b.winnerNumber - a.winnerNumber
+                        // })
+                        console.log(rows,'数字排名？？？============')
+                        // 当前参与实时排名
+                        let dangQianPaiMing:number = -1
+                
+
+                      dangQianPaiMing =  rows.findIndex(item=>{
+                            return item.hash == success.rows[0].hash
+                        })
+
+                        // console.log(rows,'最新rows')
+                        // 当期最高排名钱包地址
+                        let fistadrress:any = null // rows[0].adrress
+                        // 当期最高排名哈希
+                        let firsthash:any = null
+                        // 当期最高排名哈希数字
+                        let fistnumber:any = null
+                        // 剩余有效参与次数
+                        // console.log(rows.length,rows,'剩余次数数组、、、、、、、、、',globalProductN)
+                        let shengyu:number = globalProductN-rows.length
+                        // 时长计算
+                        let startTime = globalLeiJiTime; 
+                        // 开始时间 
+                        let endTime = new Date(); 
+                        // 结束时间 
+                        let timeDifference = endTime.getTime() - startTime.getTime(); 
+                        // 计算差值（单位为毫秒） 
+                        let minutesDifference:number = Math.floor(timeDifference / (1000 * 60)); 
+                        // 将差值转换为分钟数 
+                        console.log('输出分钟数间隔',minutesDifference); // 输出分钟数间隔
+                        
+                     await   sendReceiveMsgByBot('',globalIssue,success,youXiaoCanYu,result1,dangQianPaiMing,fistadrress,firsthash,
+                        fistnumber,shengyu,minutesDifference)
+                        }
+                        
+                      
                        }
                         
 
@@ -767,33 +835,9 @@ export function changeHashNumb(baseHash:string){
     return result1
 }
 function extractLastNonZeroDigits(number:number) {
-    const digits = number.toString().split('').reverse();
-  
-    let extractedDigits = '';
-    let count = 0;
-    let foundNonZero = false;
-  
-    for (let i = 0; i < digits.length; i++) {
-      const digit = digits[i];
-      if (digit !== '0') {
-        extractedDigits = digit + extractedDigits;
-        count++;
-        foundNonZero = true;
-      } else if (foundNonZero) {
-        extractedDigits = digit + extractedDigits;
-        count++;
-      }
-  
-      if (count === 6) {
-        break;
-      }
-    }
-  
-    while (extractedDigits.length > 1 && extractedDigits[0] === '0') {
-      extractedDigits = extractedDigits.substr(1);
-    }
-  
-    return parseInt(extractedDigits);
+        let str = number.toString()
+        str = str.slice(-6);
+        return parseInt(str);
   }
 export function getHashNumb(hash:string){
   

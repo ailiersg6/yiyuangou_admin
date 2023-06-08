@@ -199,8 +199,8 @@ export async function sendWinMsgByBot(rows: any[],time1:number,globalIssue:numbe
 
     let data3 = await myQuery.query("select * from set1 where id =? ", [1])
     let j_1 = data3.rows[0].issue
-    let j_2 = data3.rows[0].productLimit
-    let data4 = await myQuery.query("SELECT * FROM adds WHERE issue= ? and val >= ?", [j_1, j_2])
+    // let j_2 = data3.rows[0].productLimit
+    let data4 = await myQuery.query("SELECT * FROM adds WHERE issue= ? and isOkNumber = ?", [j_1, 1])
     let youxiao = data4.rows.length
     // 总转账金额
     let sumVal = await myQuery.query("SELECT SUM(val) as val FROM adds WHERE issue = ?", [j_])
@@ -220,14 +220,12 @@ export async function sendWinMsgByBot(rows: any[],time1:number,globalIssue:numbe
     let winList = ``
     // 前三名
     for (let i = 0; i < rows.length ; i++) {
-      winList += `
- 
+      winList += `   
   转账时间：${formatDate(new Date(rows[i].time))}
   转账地址：<code>${rows[i].adrress}</code>
   接收地址：<code>${(process.env.OWNER_WALLET!)}</code>
   转账哈希：<code>${changeHash(rows[i].hash)}</code>
-  转账哈希数字：${changeHashNumb(rows[i].hash)}
-  
+  转账哈希数字后六位：${(rows[i].winnerNumber)}
       `
     }
 
@@ -243,13 +241,9 @@ export async function sendWinMsgByBot(rows: any[],time1:number,globalIssue:numbe
   总时长：${time1} 分钟
   合约状态：关闭
 
-
-
   以下为当期中奖者：
 ${winList}
-
  注！！！
-
 请暂停使用TON钱包(TonKeeper,TonWallet)进行转账，耐心等待下一期NFT夺宝开启，感谢您的参与！
     `
 
@@ -331,7 +325,23 @@ export async function sendReceiveMsgByBot(obj: any,globalIssue:number,queryResul
   let data = await myQuery.query("SELECT * FROM set1 WHERE id= ? ", [1])
 
   let data4 = await myQuery.query("SELECT * FROM adds WHERE id= ?", [0])
+let info = ''
 
+let endMsg = ``
+if(shengyu == 0){
+  info = `（本期结束 请耐心等待开奖）`
+  endMsg = `
+  注！！！
+请暂停使用TON钱包(TonKeeper,TonWallet)进行转账，耐心等待开奖与派奖，感谢您的参与！
+  `
+}
+else{
+  endMsg =`
+  合约地址(点击即可复制)：<code>${process.env.OWNER_WALLET}</code>
+
+请使用TON钱包(TonKeeper,TonWallet)进行转账夺宝，低于最低转账金额的转账记录将不计算排名与有效次数，金额恕不退回。在时长范围内达到有效次数即刻开奖，未达到有效转账次数的情况下将会自动延长一倍时长。
+`
+}
   try {
 
     let bot = new Bot(process.env.BOT_TOKEN!, {
@@ -358,20 +368,16 @@ NFT夺宝开启时间：${formatDate(new Date())}
 转账金额：${(queryResult.rows[0].val/1000000000)} TON
 是否有效：${youXiaoCanYu}
 转账哈希：<code>${(queryResult.rows[0].hash)}</code>
-转账哈希值数字：${(queryResult.rows[0].winnerNumber)}
-当期排名：${ queryResult.rows[0].isOkNumber == 1? (dangQianPaiMing+1):'无效参与'}
-剩余有效转账次数：${shengyu}
+转账哈希值数字后六位：${(queryResult.rows[0].winnerNumber)}
+当期排名：${ dangQianPaiMing == -1 ? '无效参与':(dangQianPaiMing+1)}
+剩余有效转账次数：${shengyu} ${info}
 当期NFT开启时长：${minutesDifference}分钟
 
+当期最高排名钱包地址：<code>${fistadrress == null ? '无':fistadrress}</code>
+当期最高排名哈希：<code>${firsthash == null ? '无':firsthash}</code>
+当期最高排名哈希数字后六位：${(fistnumber == null ? '无':fistnumber)}
+${endMsg}
 
-当期最高排名钱包地址：<code>${fistadrress}</code>
-当期最高排名哈希：<code>${firsthash}</code>
-当期最高排名哈希数字：${(fistnumber)}
-
-
-合约地址(点击即可复制)：<code>${process.env.OWNER_WALLET}</code>
-
-请使用TON钱包(TonKeeper,TonWallet)进行转账夺宝，低于最低转账金额的转账记录将不计算排名与有效次数，金额恕不退回。在时长范围内达到有效次数即刻开奖，未达到有效转账次数的情况下将会自动延长一倍时长。
 `
     if (gropId == 0) {
       console.log("发送不成功 群组id =", gropId)
