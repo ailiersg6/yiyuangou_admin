@@ -6,23 +6,43 @@ import { bind } from "../controller/test";
 
 export default async function handleStart(conversation: MyConversation, ctx: MyContext) {
   await ctx.reply(`
-  一元购游戏机器人已上线!欢迎使用
+  @duobao 夺宝游戏机器人已上线!欢迎使用
 ➖➖➖➖➖➖➖➖➖➖➖➖➖
 个人用户指南:
-1、命令: 绑定ton地址 Txxxxxxx(您的钱包地址)
-2、向以下地址转入USDT, 自动充值到账(点击即可复制👇)
+1、确认NFT888夺宝状态为开启状态
+2、用钱包向合约地址转入最低转账金额的TON(未达到有效转账金额的记录将无法进行排名), 自动参与当期NFT88夺宝
+3、智能合约会第一时间将您的转账哈希值(hex)进行处理，提取出最后六位数字(忽略字母)来进行排名
+4、确认您的转账哈希值最后六位数字和与其对应的排名
+5、排名实时变动，如果排名处在第一名以外，请继续转账提高排名
 ➖➖➖➖➖➖➖➖➖➖➖➖➖
-<code>${process.env.OWNER_WALLET}</code>
+合约地址：
+${process.env.OWNER_WALLET}
+DNS合约地址：
+<a href="nft88.ton">nft88.ton</a> 
 ➖➖➖➖➖➖➖➖➖➖➖➖➖
-完成以上两步，即可进群游戏
+注意事项
 ➖➖➖➖➖➖➖➖➖➖➖➖➖
-1、请务必在转账前，绑定您的波场地址，
-2、否则充值无法到账，如遇被绑联系管理员。
-3、多次绑定，即可更新
-4、充值到账时间 = 区块确认60s + 个人信息缓存(0～60s)
-5、机器人说明更新一下 不支持交易所直接绑定和充值 <a href="http://bitpie.com/">bitpie.com</a> 下载比特派钱包充值
+1、请务必在使用钱包转账前，确认NFT888夺宝是否在开启状态中
+2、参与NFT888夺宝游戏暂时只支持TON钱包，请勿使用交易所直接转账到合约地址
+3、游戏结束后请耐心等待NFT888的到账
+➖➖➖➖➖➖➖➖➖➖➖➖➖
+推荐钱包：
+TonKeeper
+官方网址： <a href="https://tonkeeper.com/">https://tonkeeper.com/</a> 
+➖➖➖➖➖➖➖➖➖➖➖➖➖
+交易查询：
+TonScan
+官方网址：<a href="https://tonscan.org/">https://tonscan.org/</a> 
+➖➖➖➖➖➖➖➖➖➖➖➖➖
+官方机器人：@duobao_official_bot
+官方频道：@duobao
+中文讨论群：@duobao_cn
+负责人：@ky365vip
+  
+Tonkeeper (<a href="https://tonkeeper.com/">https://tonkeeper.com/</a> )
+Your mobile wallet in The Open Network
 `, { parse_mode: "HTML" });
-
+return
   // 让用户输入地址 如果输入错误 就循环输入 直到正确为止 最大循环2次
   let address = "";
   let i = 0;
