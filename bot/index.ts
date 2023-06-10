@@ -257,7 +257,7 @@ const markup = {
     ],
     [
         { text: '机器人', url: `${process.env.BOT_LINK}` },
-        { text: '官方频道', url: `https://t.me/+j5fuCTOcR7JhNWI9` },
+        { text: '官方频道', url: `https://t.me/duobao` },
     ]
   ]
 };
@@ -325,7 +325,7 @@ const markup = {
     ],
     [
         { text: '机器人', url: `${process.env.BOT_LINK}` },
-        { text: '官方频道', url: `https://t.me/+j5fuCTOcR7JhNWI9` },
+        { text: '官方频道', url: `https://t.me/duobao` },
     ]
   ]
 };
@@ -418,7 +418,7 @@ ${endMsg}
         ],
         [
             { text: '机器人', url: `${process.env.BOT_LINK}` },
-            { text: '官方频道', url: `https://t.me/+j5fuCTOcR7JhNWI9` },
+            { text: '官方频道', url: `https://t.me/duobao` },
         ]
       ]
     };
