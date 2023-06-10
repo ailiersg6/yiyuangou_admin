@@ -1,10 +1,10 @@
 import fastify from 'fastify'
-import { test1 } from './controller/test'
-import {bottest1} from './bot/ton'
+import { inster1, test1 } from './controller/test'
 import { routes } from './routers/botRouer'
+import { routes1 } from './routers/apiRouter'
 import {initBot} from './bot/index'
 import { Bot, webhookCallback } from 'grammy'
-
+const fastifyCors = require('fastify-cors');
 // env环境变量设置↓↓↓↓↓↓↓↓↓↓
 require('dotenv').config();
 
@@ -18,14 +18,28 @@ console.log('当前环境=>',process.env.NETWORK);
 
 
 const server = fastify()
+server.setErrorHandler((error, request, reply) => {
+  // 记录错误信息
+  console.error(error);
 
- initBot() // 初始化机器人
+  // 返回一个友好的错误响应
+  reply.status(500).send({ error: 'Internal Server Error' });
+  
+});
 
+// 接收转账 
+inster1()
 
+initBot() // 初始化机器人
+
+server.register(fastifyCors, {
+  origin: '*',
+  credentials: true,
+});
 
 server.register(routes)
-
-server.listen({ port: 8080 }, (err, address) => {
+server.register(routes1)
+server.listen({ port: 8080,host:"0.0.0.0" }, (err, address) => {
     if (err) {
         console.error(err)
         process.exit(1)
