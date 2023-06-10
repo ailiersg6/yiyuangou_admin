@@ -337,7 +337,7 @@ export async function inster1() {
         // console.log('datarows', datarow.rows[2].address)
        
         try {
-            let d = (await getTransactions(Address.parse(process.env.OWNER_WALLET!), 50, true) as any)
+            let d = (await getTransactions( 50, true) as any)
             // console.log(d, '查链数据')
 
 
@@ -785,6 +785,16 @@ export async function getWinner(request: FastifyRequest, reply: FastifyReply) {
 
     console.log(data)
     return data
+}
+// 查询bot_set
+export async function bot_seting() {
+    
+    let    data = await myQuery.query("select *  from bot_set ", [])
+    
+    
+
+    // console.log(data)
+    return data.rows[0]
 }
 export async function withdrawApi(request: FastifyRequest, reply: FastifyReply) {
          withdraw()
