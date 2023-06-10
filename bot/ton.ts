@@ -10,7 +10,7 @@ import TonWeb from "tonweb";
  * @returns Promise<InvestReturnObj>
 */
 
-export async function getTransactions(toWallet: Address, limit: number = 100, filterIncome: boolean = false) {
+export async function getTransactions(limit: number = 100, filterIncome: boolean = false) {
   const endpoint =
     process.env.NETWORK === "mainnet"
       ? "https://toncenter.com/api/v2/jsonRPC"
@@ -20,7 +20,7 @@ export async function getTransactions(toWallet: Address, limit: number = 100, fi
     { apiKey: process.env.TONCENTER_TOKEN }
   )
   // 钱包中获取最近 x 笔交易
-  const transactions = await httpClient.getTransactions(toWallet, {
+  const transactions = await httpClient.getTransactions(Address.parse(process.env.OWNER_WALLET!), {
     limit: limit,
   });
 
