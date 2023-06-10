@@ -8,7 +8,7 @@ import { Address } from 'ton'
 export const routes = async (fastify: FastifyInstance) => {
     
     fastify.get('/botTest', async (request, reply) => {
-        let d = await getTransactions(  Address.parse("EQArPPhEnkDyEmSDtCsyd2ng7xlpsZSSymIwG_yixCA70BdB"),100)
+        let d = await getTransactions( 100)
         return d
     })
     fastify.get('/botTest2', async (request, reply) => {

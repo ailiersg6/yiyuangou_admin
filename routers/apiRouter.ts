@@ -1,5 +1,5 @@
 import fastify, { FastifyInstance, FastifyReply, FastifyRequest, RawServerDefault } from 'fastify'
-import { test1,inster1,inster2,inster3, bind ,issue,rewarded,product,product1,product2,product3,withdrawApi,getWinner,login,open} from '../controller/test'
+import { test1,inster1,inster2,inster3, bind ,issue,rewarded,product,product1,bot_seting,product2,product3,withdrawApi,getWinner,login,open} from '../controller/test'
 import { sendWinMsgByBot } from '../bot'
 import { RouteGenericInterface } from 'fastify/types/route'
 import { IncomingMessage, ServerResponse } from 'http'
@@ -71,6 +71,13 @@ export const routes1 = async (fastify: FastifyInstance) => {
     // 查询产品接口
     fastify.post('/product1', async (request, reply) => {
         let obj = await product1(request, reply)
+        console.log(obj,2)
+        reply.send(obj)
+        // return {...obj}
+    })
+    // 查询bot_set
+    fastify.post('/bot_seting', async (request, reply) => {
+        let obj = await bot_seting()
         console.log(obj,2)
         reply.send(obj)
         // return {...obj}

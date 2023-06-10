@@ -30,8 +30,8 @@ let bot: Bot;
 export async function initBot() {
   try {
 
-    console.log("BOT_TOKEN", process.env.BOT_TOKEN)
-    bot = new Bot(process.env.BOT_TOKEN!, {
+    console.log("BOT_TOKEN", global.env.BOT_TOKEN)
+    bot = new Bot(global.env.BOT_TOKEN!, {
       client: {
         timeoutSeconds: 60,
         sensitiveLogs: true
@@ -80,9 +80,9 @@ export async function initBot() {
     const markup = {
       inline_keyboard: [
         [
-          //process.env
-          { text: '开始', url: `${process.env.BOT_LINK}` },
-          // { text: '提现', url: `https://t.me/${process.env}` }
+          //global.env
+          { text: '开始', url: `${global.env.BOT_LINK}` },
+          // { text: '提现', url: `https://t.me/${global.env}` }
         ]
       ]
     };
@@ -170,7 +170,7 @@ export async function initBot() {
  */
 export async function sendUserMsgByBot(chat_id: any, msg: string) {
   try {
-    const bot = new Bot(process.env.BOT_TOKEN!, {
+    const bot = new Bot(global.env.BOT_TOKEN!, {
       client: {
         timeoutSeconds: 60,
         sensitiveLogs: true
@@ -210,7 +210,7 @@ export async function sendWinMsgByBot(rows: any[],time1:number,globalIssue:numbe
     // const markup = {
     //   inline_keyboard: [
     //     [
-    //       { text: '参与', url: `${process.env.BOT_LINK}` },
+    //       { text: '参与', url: `${global.env.BOT_LINK}` },
     //       // { text: '提现', url: 'https://t.me/yiyuangou2_bot' }
     //     ]
     //   ]
@@ -224,7 +224,7 @@ export async function sendWinMsgByBot(rows: any[],time1:number,globalIssue:numbe
       winList += `   
 转账时间：${formatDate(new Date(rows[i].time))}
 转账地址：<code>${rows[i].adrress}</code>
-接收地址：<code>${(process.env.OWNER_WALLET!)}</code>
+接收地址：<code>${(global.env.OWNER_WALLET!)}</code>
 转账哈希：<code>${(rows[i].hash)}</code>
 转账哈希数字后六位：${(rows[i].winnerNumber)}
       `
@@ -252,17 +252,17 @@ ${winList}
 const markup = {
   inline_keyboard: [
     [
-      // { text: '参与', url: `${process.env.BOT_LINK}` },
+      // { text: '参与', url: `${global.env.BOT_LINK}` },
       { text: '点击验证结果', url: `https://tonscan.org/tx/${rows[0].hash}` }
     ],
     [
-        { text: '机器人', url: `${process.env.BOT_LINK}` },
+        { text: '机器人', url: `${global.env.BOT_LINK}` },
         { text: '官方频道', url: `https://t.me/duobao` },
     ]
   ]
 };
 
-    let bot = new Bot(process.env.BOT_TOKEN!, {
+    let bot = new Bot(global.env.BOT_TOKEN!, {
       client: {
         timeoutSeconds: 60,
         sensitiveLogs: true
@@ -293,7 +293,7 @@ export async function sendStartMsgByBot(obj: any,globalIssue:number,globalLeiJiT
 
   try {
 
-    let bot = new Bot(process.env.BOT_TOKEN!, {
+    let bot = new Bot(global.env.BOT_TOKEN!, {
       client: {
         timeoutSeconds: 60,
         sensitiveLogs: true
@@ -310,7 +310,7 @@ NFT夺宝开启时间：${formatDate(globalLeiJiTime)}
 时长：${data.rows[0].wintime} 分钟
 合约状态：开启
 
-合约地址(点击即可复制)：<code>${process.env.OWNER_WALLET}</code>
+合约地址(点击即可复制)：<code>${global.env.OWNER_WALLET}</code>
 
 请使用TON钱包(TonKeeper,TonWallet)进行转账，低于最低转账金额的订单将不计算排名与有效次数，金额恕不退回。在时长范围内达到有效次数即刻开奖，未达到有效转账次数的情况下将会自动延长一倍时长。
 
@@ -320,11 +320,11 @@ NFT夺宝开启时间：${formatDate(globalLeiJiTime)}
 const markup = {
   inline_keyboard: [
     [
-      // { text: '参与', url: `${process.env.BOT_LINK}` },
+      // { text: '参与', url: `${global.env.BOT_LINK}` },
       { text: '点击验证结果', url: `https://tonscan.org/` }
     ],
     [
-        { text: '机器人', url: `${process.env.BOT_LINK}` },
+        { text: '机器人', url: `${global.env.BOT_LINK}` },
         { text: '官方频道', url: `https://t.me/duobao` },
     ]
   ]
@@ -367,14 +367,14 @@ if(shengyu == 0){
 }
 else{
   endMsg =`
-合约地址(点击即可复制)：<code>${process.env.OWNER_WALLET}</code>
+合约地址(点击即可复制)：<code>${global.env.OWNER_WALLET}</code>
 
 请使用TON钱包(TonKeeper,TonWallet)进行转账夺宝，低于最低转账金额的转账记录将不计算排名与有效次数，金额恕不退回。在时长范围内达到有效次数即刻开奖，未达到有效转账次数的情况下将会自动延长一倍时长。
 `
 }
   try {
 
-    let bot = new Bot(process.env.BOT_TOKEN!, {
+    let bot = new Bot(global.env.BOT_TOKEN!, {
       client: {
         timeoutSeconds: 60,
         sensitiveLogs: true
@@ -393,7 +393,7 @@ NFT夺宝开启时间：${formatDate(globalLeiJiTime)}
 
 转账时间：${formatDate(queryResult.rows[0].time)}
 转账钱包地址：<code>${(queryResult.rows[0].adrress)}</code>
-接收钱包地址：<code>${(process.env.OWNER_WALLET!)}</code>
+接收钱包地址：<code>${(global.env.OWNER_WALLET!)}</code>
 转账币种：TON
 转账金额：${(queryResult.rows[0].val/1000000000)} TON
 是否有效：${youXiaoCanYu}
@@ -413,11 +413,11 @@ ${endMsg}
   const markup = {
       inline_keyboard: [
         [
-          // { text: '参与', url: `${process.env.BOT_LINK}` },
+          // { text: '参与', url: `${global.env.BOT_LINK}` },
           { text: '点击验证结果', url: `https://tonscan.org/tx/${queryResult.rows[0].hash}` }
         ],
         [
-            { text: '机器人', url: `${process.env.BOT_LINK}` },
+            { text: '机器人', url: `${global.env.BOT_LINK}` },
             { text: '官方频道', url: `https://t.me/duobao` },
         ]
       ]
