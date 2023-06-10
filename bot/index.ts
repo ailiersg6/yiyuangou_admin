@@ -100,6 +100,7 @@ export async function initBot() {
           const myRegex = /^[A-Z]\d{2}$/; // 匹配 A-Z 开头的 3 位字符串，第二三位为数字
           if (myRegex.test(ctx.message.text)) {
             // 发送开奖信息
+            return
             ctx.reply(`
          开奖成功！当前 100 USDT a场
       当前游戏期号: 1683273334 期
@@ -188,7 +189,7 @@ export async function sendUserMsgByBot(chat_id: any, msg: string) {
  * 通过bot群发送开奖广播 带按钮
  * @param 消息文本
  */
-export async function sendWinMsgByBot(rows: any[],time1:number,globalIssue:number) {
+export async function sendWinMsgByBot(rows: any[],time1:number,globalIssue:number,globalLeiJiTime:Date) {
 
   //NFT达到了有效转账次数之后(也就是最后一次有效转账过后的时候)，机器人发送通知格式，(并且这条信息需要置顶，替换掉开启NFT那条置顶消息，也就是pin到频道)
   try {
@@ -221,31 +222,45 @@ export async function sendWinMsgByBot(rows: any[],time1:number,globalIssue:numbe
     // 前三名
     for (let i = 0; i < rows.length ; i++) {
       winList += `   
-  转账时间：${formatDate(new Date(rows[i].time))}
-  转账地址：<code>${rows[i].adrress}</code>
-  接收地址：<code>${(process.env.OWNER_WALLET!)}</code>
-  转账哈希：<code>${changeHash(rows[i].hash)}</code>
-  转账哈希数字后六位：${(rows[i].winnerNumber)}
+转账时间：${formatDate(new Date(rows[i].time))}
+转账地址：<code>${rows[i].adrress}</code>
+接收地址：<code>${(process.env.OWNER_WALLET!)}</code>
+转账哈希：<code>${(rows[i].hash)}</code>
+转账哈希数字后六位：${(rows[i].winnerNumber)}
       `
     }
 
     let msg = `
-      期数：NFT-TON-${globalIssue}
-  NFT名称：${data.rows[0].product}
-  NFT金额：${data.rows[0].productValue}
-  币种：TON
-  最低转账金额：${data.rows[0].productLimit / 1000000000} TON
-  总转账金额：${sumVal.rows[0].val / 1000000000} TON
-  总有效转账次数：${youxiao}
-  NFT夺宝开启时间：${formatDate(new Date())}
-  总时长：${time1} 分钟
-  合约状态：关闭
+    期数：NFT-TON-${globalIssue}
+NFT名称：${data.rows[0].product}
+NFT金额：${data.rows[0].productValue}
+币种：TON
+最低转账金额：${data.rows[0].productLimit / 1000000000} TON
+总转账金额：${sumVal.rows[0].val / 1000000000} TON
+总有效转账次数：${youxiao}
+NFT夺宝开启时间：${formatDate(globalLeiJiTime)}
+总时长：${time1} 分钟
+合约状态：关闭
 
-  以下为当期中奖者：
+以下为当期中奖者：
 ${winList}
- 注！！！
+注！！！
 请暂停使用TON钱包(TonKeeper,TonWallet)进行转账，耐心等待下一期NFT夺宝开启，感谢您的参与！
     `
+
+    // 按钮
+const markup = {
+  inline_keyboard: [
+    [
+      // { text: '参与', url: `${process.env.BOT_LINK}` },
+      { text: '点击验证结果', url: `https://tonscan.org/tx/${rows[0].hash}` }
+    ],
+    [
+        { text: '机器人', url: `${process.env.BOT_LINK}` },
+        { text: '官方频道', url: `https://t.me/duobao` },
+    ]
+  ]
+};
 
     let bot = new Bot(process.env.BOT_TOKEN!, {
       client: {
@@ -256,7 +271,7 @@ ${winList}
     if (gropId == 0) {
       console.log("发送不成功 群组id =", gropId)
     } else {
-      await bot.api.sendMessage(gropId, msg,{ parse_mode: "HTML" })
+      await bot.api.sendMessage(gropId, msg,{ parse_mode: "HTML",reply_markup:markup })
       return new Date()
     }
 
@@ -270,7 +285,7 @@ ${winList}
  * 发送启动夺宝消息
  * @param 消息文本
  */
-export async function sendStartMsgByBot(obj: any,globalIssue:number) {
+export async function sendStartMsgByBot(obj: any,globalIssue:number,globalLeiJiTime:Date) {
   // 启动NFT夺宝发送到频道的内容，和机器人通知(并且这条信息需要置顶，也就是pin到频道
   
   let data = await myQuery.query("SELECT * FROM set1 WHERE id= ? ", [1])
@@ -291,7 +306,7 @@ NFT金额：${data.rows[0].productValue}
 币种：TON
 最低转账金额：${data.rows[0].productLimit / 1000000000} TON
 有效转账次数：${data.rows[0].productN}
-NFT夺宝开启时间：${formatDate(new Date())}
+NFT夺宝开启时间：${formatDate(globalLeiJiTime)}
 时长：${data.rows[0].wintime} 分钟
 合约状态：开启
 
@@ -300,10 +315,25 @@ NFT夺宝开启时间：${formatDate(new Date())}
 请使用TON钱包(TonKeeper,TonWallet)进行转账，低于最低转账金额的订单将不计算排名与有效次数，金额恕不退回。在时长范围内达到有效次数即刻开奖，未达到有效转账次数的情况下将会自动延长一倍时长。
 
 `
+
+// 按钮
+const markup = {
+  inline_keyboard: [
+    [
+      // { text: '参与', url: `${process.env.BOT_LINK}` },
+      { text: '点击验证结果', url: `https://tonscan.org/` }
+    ],
+    [
+        { text: '机器人', url: `${process.env.BOT_LINK}` },
+        { text: '官方频道', url: `https://t.me/duobao` },
+    ]
+  ]
+};
+
     if (gropId == 0) {
       console.log("发送不成功 群组id =", gropId)
     } else {
-      await bot.api.sendMessage(gropId, msg,{ parse_mode: "HTML" })
+      await bot.api.sendMessage(gropId, msg,{ parse_mode: "HTML",reply_markup:markup })
       return new Date()
     }
 
@@ -319,7 +349,7 @@ NFT夺宝开启时间：${formatDate(new Date())}
  * @param 消息文本
  */
 export async function sendReceiveMsgByBot(obj: any,globalIssue:number,queryResult:any,youXiaoCanYu:string,result1:number,
-  dangQianPaiMing:number,fistadrress:any,firsthash:any,fistnumber:any,shengyu:number,minutesDifference:number) {
+  dangQianPaiMing:number,fistadrress:any,firsthash:any,fistnumber:any,shengyu:number,minutesDifference:number,globalLeiJiTime:Date) {
   console.log('queryResult',queryResult)
   // 开启状态中任何地址转账到合约地址需要发送到频道的内容
   let data = await myQuery.query("SELECT * FROM set1 WHERE id= ? ", [1])
@@ -331,13 +361,13 @@ let endMsg = ``
 if(shengyu == 0){
   info = `（本期结束 请耐心等待开奖）`
   endMsg = `
-  注！！！
+注！！！
 请暂停使用TON钱包(TonKeeper,TonWallet)进行转账，耐心等待开奖与派奖，感谢您的参与！
   `
 }
 else{
   endMsg =`
-  合约地址(点击即可复制)：<code>${process.env.OWNER_WALLET}</code>
+合约地址(点击即可复制)：<code>${process.env.OWNER_WALLET}</code>
 
 请使用TON钱包(TonKeeper,TonWallet)进行转账夺宝，低于最低转账金额的转账记录将不计算排名与有效次数，金额恕不退回。在时长范围内达到有效次数即刻开奖，未达到有效转账次数的情况下将会自动延长一倍时长。
 `
@@ -357,7 +387,7 @@ NFT金额：${data.rows[0].productValue}
 币种：TON
 最低转账金额：${data.rows[0].productLimit / 1000000000} TON
 有效转账次数：${data.rows[0].productN}
-NFT夺宝开启时间：${formatDate(new Date())}
+NFT夺宝开启时间：${formatDate(globalLeiJiTime)}
 时长：${data.rows[0].wintime} 分钟
 合约状态：开启中
 
@@ -377,12 +407,28 @@ NFT夺宝开启时间：${formatDate(new Date())}
 当期最高排名哈希：<code>${firsthash == null ? '无':firsthash}</code>
 当期最高排名哈希数字后六位：${(fistnumber == null ? '无':fistnumber)}
 ${endMsg}
-
 `
+
+// 按钮
+  const markup = {
+      inline_keyboard: [
+        [
+          // { text: '参与', url: `${process.env.BOT_LINK}` },
+          { text: '点击验证结果', url: `https://tonscan.org/tx/${queryResult.rows[0].hash}` }
+        ],
+        [
+            { text: '机器人', url: `${process.env.BOT_LINK}` },
+            { text: '官方频道', url: `https://t.me/duobao` },
+        ]
+      ]
+    };
+
+
     if (gropId == 0) {
       console.log("发送不成功 群组id =", gropId)
     } else {
-      await bot.api.sendMessage(gropId, msg,{ parse_mode: "HTML" })
+      await bot.api.sendMessage(gropId, msg,{ parse_mode: "HTML",reply_markup: markup })
+      
       return new Date()
     }
 

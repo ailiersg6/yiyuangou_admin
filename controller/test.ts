@@ -140,7 +140,7 @@ async function Hander(request: any) {
                         await myQuery.query("update adds set winners = ? where hash = ? ", [1,rows[i_2].hash])
                     }
                    let winRows   = await myQuery.query("select * from adds where winners = ? and issue = ?",[1,globalIssue])
-                    sendWinMsgByBot((winRows.rows), time1, globalIssue)
+                    sendWinMsgByBot((winRows.rows), time1, globalIssue,globalLeiJiTime)
                     // console.log("全局期数", globalIssue)
                     // await myQuery.query("update set1 set issue = ? ", [globalIssue + 1])
                     // let newVal  = await myQuery.query("select issue from set1", [])
@@ -159,7 +159,7 @@ export async function rewarded(request: FastifyRequest, reply: FastifyReply) {
     return new Promise(async (resolve) => {
         globalRewardedNumber = 1;
         // 发送开始抢单提示
-        sendStartMsgByBot("", globalIssue)
+        sendStartMsgByBot("", globalIssue,globalLeiJiTime)
 
         for (let i = 1; true; i++) {
             globalRewardedNumber = i
@@ -183,6 +183,7 @@ export async function issue(request: FastifyRequest, reply: FastifyReply) {
     // 开启参与时间获取
     let nowTime = new Date()
     globalLeiJiTime = nowTime
+    // globalLeiJiTime
     // 设置全局变量
 
     globalIssue = dat.rows[0].issue; // 全局期数
@@ -445,7 +446,7 @@ export async function inster1() {
                         console.log('输出分钟数间隔',minutesDifference); // 输出分钟数间隔
                         
                         sendReceiveMsgByBot('',globalIssue,success,youXiaoCanYu,result1,dangQianPaiMing,fistadrress,firsthash,
-                        fistnumber,shengyu,minutesDifference)
+                        fistnumber,shengyu,minutesDifference,globalLeiJiTime)
                         }else{
                             // 无效转账金额
 
@@ -502,7 +503,7 @@ export async function inster1() {
                         console.log('输出分钟数间隔',minutesDifference); // 输出分钟数间隔
                         
                      await   sendReceiveMsgByBot('',globalIssue,success,youXiaoCanYu,result1,dangQianPaiMing,fistadrress,firsthash,
-                        fistnumber,shengyu,minutesDifference)
+                        fistnumber,shengyu,minutesDifference,globalLeiJiTime)
                         }
                         
                       
