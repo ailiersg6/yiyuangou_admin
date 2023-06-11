@@ -54,7 +54,7 @@ bot_seting().then(data => {
   global.env.NETWORK = data.NETWORK;
   global.env.MNEMONIC = data.MNEMONIC;
 
-  console.log("global.str 1", global.env)
+  console.log("globa l.str 1", global.env)
 
   // 接收转账 
 
