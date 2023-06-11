@@ -16,7 +16,7 @@ export default async function handleStart(conversation: MyConversation, ctx: MyC
 5、排名实时变动，如果排名处在第一名以外，请继续转账提高排名
 ➖➖➖➖➖➖➖➖➖➖➖➖➖
 合约地址：
-${process.env.OWNER_WALLET}
+${global.env.OWNER_WALLET}
 DNS合约地址：
 <a href="nft88.ton">nft88.ton</a> 
 ➖➖➖➖➖➖➖➖➖➖➖➖➖

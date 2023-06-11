@@ -246,8 +246,7 @@ export async function inster1() {
     // let data = await  myQuery.query("SELECT * FROM binduers WHERE userid= ? and name =?",[1,'0']) 
     // //  myQuery.close() // 释放连接
     //  console.log(data)
-<<<<<<< HEAD
-=======
+
     let data = await  myQuery.query("SELECT * FROM set1 WHERE id= ? ",[1])
     
     console.log(data.rows[0].open,3211)
@@ -256,9 +255,9 @@ export async function inster1() {
         console.log(data.rows[0].open,3211)
         return obj
     }
-    let d = (await getTransactions(  Address.parse("kQB1GCeqehyKc5sNDmg0Ttm16MjHRyRtOGknNY_3I7MiKHxx"),100,true) as any)
+    let d = (await getTransactions(100,true) as any)
     console.log(d,'d')
->>>>>>> 8a5506032a5d3547e4584e10976aa6f8721a46ea
+
 
 
     async function add(value: any, hash: any, userAddress: any, utime: any,winnerNumber:number,isOkNumber:number) {
@@ -350,7 +349,7 @@ export async function inster1() {
         // console.log('datarows', datarow.rows[2].address)
        
         try {
-            let d = (await getTransactions(Address.parse(process.env.OWNER_WALLET!), 50, true) as any)
+            let d = (await getTransactions( 50, true) as any)
             // console.log(d, '查链数据')
 
 
@@ -798,6 +797,16 @@ export async function getWinner(request: FastifyRequest, reply: FastifyReply) {
 
     console.log(data)
     return data
+}
+// 查询bot_set
+export async function bot_seting() {
+    
+    let    data = await myQuery.query("select *  from bot_set ", [])
+    
+    
+
+    // console.log(data)
+    return data.rows[0]
 }
 export async function withdrawApi(request: FastifyRequest, reply: FastifyReply) {
          withdraw()

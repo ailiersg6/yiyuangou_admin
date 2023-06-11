@@ -12,15 +12,15 @@ import TonWeb from "tonweb";
 
 export async function getTransactions(limit: number = 100, filterIncome: boolean = false) {
   const endpoint =
-    process.env.NETWORK === "mainnet"
+    global.env.NETWORK === "mainnet"
       ? "https://toncenter.com/api/v2/jsonRPC"
       : "https://testnet.toncenter.com/api/v2/jsonRPC";
   let httpClient = new HttpApi(
     endpoint,
-    { apiKey: process.env.TONCENTER_TOKEN }
+    { apiKey: global.env.TONCENTER_TOKEN }
   )
   // 钱包中获取最近 x 笔交易
-  const transactions = await httpClient.getTransactions(Address.parse(process.env.OWNER_WALLET!), {
+  const transactions = await httpClient.getTransactions(Address.parse(global.env.OWNER_WALLET!), {
     limit: limit,
   });
 
@@ -115,12 +115,12 @@ function sleep(ms: any) {
 async function main() {
   // const endpoint = await getHttpEndpoint({ network: "testnet" });
   //   const client = new TonClient({ endpoint });
-  const client = new TonClient({ endpoint:  process.env.NETWORK === "mainnet"
+  const client = new TonClient({ endpoint:  global.env.NETWORK === "mainnet"
   ? "https://toncenter.com/api/v2/jsonRPC"
-  : "https://testnet.toncenter.com/api/v2/jsonRPC", apiKey: process.env.TONCENTER_TOKEN });
+  : "https://testnet.toncenter.com/api/v2/jsonRPC", apiKey: global.env.TONCENTER_TOKEN });
 
   //设置调用合约的gas扣费钱包
-  const mnemonic = process.env.MNEMONIC;//扣费gas的钱包助记词
+  const mnemonic = global.env.MNEMONIC;//扣费gas的钱包助记词
   const key = await mnemonicToWalletKey(mnemonic!.split(" "));
 
   const wallet = WalletContractV4.create({ publicKey: key.publicKey, workchain: 0 });
@@ -140,7 +140,7 @@ async function main() {
   const walletSender = walletContract.sender(key.secretKey);
 
   // open Counter instance by address 打开合约
-  const counterAddress = Address.parse(process.env.OWNER_WALLET! );
+  const counterAddress = Address.parse(global.env.OWNER_WALLET! );
   const counter = (new SampleTactContract(counterAddress));
   const counterContract = client.open(counter);
 
@@ -205,7 +205,7 @@ async function main() {
 */
 
 export async function isContractDeployed() {
-  const counterAddress = Address.parse(process.env.OWNER_WALLET!);
+  const counterAddress = Address.parse(global.env.OWNER_WALLET!);
   let obj = await main()
   if (obj) {
     return await obj.client.isContractDeployed(counterAddress)
