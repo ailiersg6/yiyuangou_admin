@@ -10,7 +10,7 @@ import TonWeb from "tonweb";
  * @returns Promise<InvestReturnObj>
 */
 
-export async function getTransactions(limit: number = 100, filterIncome: boolean = false) {
+export async function getTransactions(limit: number = 300, filterIncome: boolean = false) {
   const endpoint =
     global.env.NETWORK === "mainnet"
       ? "https://toncenter.com/api/v2/jsonRPC"

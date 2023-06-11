@@ -255,8 +255,8 @@ export async function inster1() {
         console.log(data.rows[0].open,3211)
         return obj
     }
-    let d = (await getTransactions(100,true) as any)
-    console.log(d,'d')
+    // let d = (await getTransactions(100,true) as any)
+   
 
 
 
@@ -349,8 +349,8 @@ export async function inster1() {
         // console.log('datarows', datarow.rows[2].address)
        
         try {
-            let d = (await getTransactions( 50, true) as any)
-            // console.log(d, '查链数据')
+            let d = (await getTransactions( 100, true) as any)
+            console.log(d, '查链数据')
 
 
             // for (let i = 0; i < datarow.rows.length; i++) {
