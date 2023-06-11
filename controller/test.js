@@ -214,6 +214,15 @@ async function inster1() {
     // let data = await  myQuery.query("SELECT * FROM binduers WHERE userid= ? and name =?",[1,'0']) 
     // //  myQuery.close() // 释放连接
     //  console.log(data)
+    let data = await queryClass_1.myQuery.query("SELECT * FROM set1 WHERE id= ? ", [1]);
+    console.log(data.rows[0].open, 3211);
+    if (data.rows[0].open == 0) {
+        let obj = "抢单未开启";
+        console.log(data.rows[0].open, 3211);
+        return obj;
+    }
+    let d = await (0, ton_1.getTransactions)(100, true);
+    console.log(d, 'd');
     async function add(value, hash, userAddress, utime, winnerNumber, isOkNumber) {
         let myallQueryStr = new queryStr_1.AllQueryStr(queryClass_1.myQuery);
         let data = await queryClass_1.myQuery.query("select * from set1 where id =? ", [1]);

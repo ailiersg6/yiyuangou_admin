@@ -114,7 +114,7 @@ class queryClass {
 exports.queryClass = queryClass;
 let myQuery = new queryClass({
     host: '184.168.123.91',
-    user: 'ton',
+    user: 'root',
     database: 'ton',
     password: "Jackluojie58@",
     waitForConnections: true,

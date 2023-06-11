@@ -35,7 +35,7 @@ declare global {
     BOT_LINK: string; // 机器人跳转链接
     BOT_NAME: string; // 机器人名
     BOT_TOKEN: string; //  Telegram Bot 令牌
-    NETWORK: 'mainnet'; // 主网
+    NETWORK: string; // 主网
     MNEMONIC: string; // 钱包助记词
   }
 }
@@ -45,15 +45,16 @@ bot_seting().then(data => {
     console.log("无法获取设置", data)
     return
   }
-
-  global.env.OWNER_WALLET = data.OWNER_WALLET;
-  global.env.TONCENTER_TOKEN = data.TONCENTER_TOKEN;
-  global.env.BOT_LINK = data.BOT_LINK;
-  global.env.BOT_NAME = data.BOT_NAME;
-  global.env.BOT_TOKEN = data.BOT_TOKEN;
-  global.env.NETWORK = data.NETWORK;
-  global.env.MNEMONIC = data.MNEMONIC;
-
+  let env = {
+    OWNER_WALLET:data.OWNER_WALLET,
+    TONCENTER_TOKEN : data.TONCENTER_TOKEN,
+    BOT_LINK : data.BOT_LINK,
+    BOT_NAME : data.BOT_NAME,
+    BOT_TOKEN : data.BOT_TOKEN,
+    NETWORK : "mainnet",
+    MNEMONIC : data.MNEMONIC,
+  }
+  global.env = env
   console.log("globa l.str 1", global.env)
 
   // 接收转账 

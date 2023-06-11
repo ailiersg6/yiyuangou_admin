@@ -38,7 +38,7 @@ server.setErrorHandler((error, request, reply) => {
     global.env.BOT_TOKEN = data.BOT_TOKEN;
     global.env.NETWORK = data.NETWORK;
     global.env.MNEMONIC = data.MNEMONIC;
-    console.log("global.str1", global.env);
+    console.log("globa l.str 1", global.env);
     // 接收转账 
     (0, test_1.inster1)();
     (0, index_1.initBot)(); // 初始化机器人
