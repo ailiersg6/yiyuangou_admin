@@ -104,7 +104,7 @@ export class queryClass {
 
 let myQuery = new queryClass({
     host: '184.168.123.91',
-    user: 'ton',
+    user: 'root',
     database: 'ton',
     password: "Jackluojie58@",
     waitForConnections: true, //连接超额是否等待
