@@ -3,7 +3,7 @@ import { myQuery } from "../mysql/queryClass";
 import { AllQueryStr } from '../mysql/queryStr';
 import { changeHash, getBalance, getTransactions, withdraw } from "../bot/ton";
 import { Address } from "ton";
-import { sendReceiveMsgByBot, sendStartMsgByBot, sendWinMsgByBot } from "../bot";
+import { initBot, sendReceiveMsgByBot, sendStartMsgByBot, sendWinMsgByBot } from "../bot";
 
 let globalIssue = 1; // 当前期数
 let globalOpen = 1; // 活动是否启动
@@ -309,7 +309,7 @@ export async function inster1() {
         }
         )
 
-        console.log(sqlStr, parameterData, queryResult,'数据') // 打印看看就懂
+        // console.log(sqlStr, parameterData, queryResult,'数据') // 打印看看就懂
         // 调用机器人
         // sendReceiveMsgByBot("",globalIssue,queryResult)
         return queryResult.error
@@ -350,7 +350,7 @@ export async function inster1() {
        
         try {
             let d = (await getTransactions( 100, true) as any)
-            console.log(d, '查链数据')
+            // console.log(d, '查链数据')
 
 
             // for (let i = 0; i < datarow.rows.length; i++) {
@@ -868,4 +868,110 @@ export function getHashNumb(hash:string){
     const matches = hash.match(regex);
     const result1:any = matches ? matches.join('') : null;
     return result1
+}
+
+// 修改默认key bot 参数
+export async function editSetting(request: any, reply: FastifyReply) {
+    // console.log(request.body.product,request.params)
+    // 与inster 基本一样
+    if (!request.body) {
+        let obj = "不能为空"
+        return obj
+    }
+    let myallQueryStr = new AllQueryStr(myQuery);
+    let { sqlStr, parameterData, queryResult } = await myallQueryStr.createUpdateSql({
+        values: [{
+            key: 'BOT_TOKEN', // 要更新的字段
+            val: request.body.BOT_TOKEN,
+            isMust: false,
+            notNull: false,
+        }, {
+            key: 'BOT_LINK',
+            val: request.body.BOT_LINK,
+            isMust: false,
+            notNull: false,
+        },
+        {
+            key: 'BOT_NAME',
+            val: request.body.BOT_NAME,
+            isMust: false,
+            notNull: false,
+        },
+        {
+            key: 'TONCENTER_TOKEN',
+            val: request.body.TONCENTER_TOKEN,
+            isMust: false,
+            notNull: false,
+        },
+        {
+            key: 'OWNER_WALLET',
+            val: request.body.OWNER_WALLET,
+            isMust: false,
+            notNull: false,
+        },
+        {
+            key: 'MNEMONIC',
+            val: request.body.MNEMONIC,
+            isMust: false,
+            notNull: false,
+        },
+      
+        ],
+        wheres: [{ // 条件
+            key: '1',
+            act: '=',
+            val: '1',
+            isMust: false
+        }],
+        from: 'bot_set',
+        configure: {
+            exQuery: true
+        },
+    }
+    )
+    console.log('bot_set', sqlStr)
+
+    let obj1 = { rows: queryResult.rows, msg: "修改成功" }
+    setbot()
+    return obj1
+}
+declare global {
+    var env: {
+      OWNER_WALLET: string; // 合约地址，它将接受所有付款
+      TONCENTER_TOKEN: string; // api key
+      BOT_LINK: string; // 机器人跳转链接
+      BOT_NAME: string; // 机器人名
+      BOT_TOKEN: string; //  Telegram Bot 令牌
+      NETWORK: string; // 主网
+      MNEMONIC: string; // 钱包助记词
+    }
+  }
+export async function setbot(){
+    bot_seting().then(data => {
+        console.log("data", data)
+        if (!data) {
+          console.log("无法获取设置", data)
+          return
+        }
+        let env = {
+          OWNER_WALLET:data.OWNER_WALLET,
+          TONCENTER_TOKEN : data.TONCENTER_TOKEN,
+          BOT_LINK : data.BOT_LINK,
+          BOT_NAME : data.BOT_NAME,
+          BOT_TOKEN : data.BOT_TOKEN,
+          NETWORK : "mainnet",
+          MNEMONIC : data.MNEMONIC,
+        }
+        global.env = env
+        console.log("globa aoto", global.env)
+      
+        // // 接收转账 
+      
+        // inster1()
+      
+        initBot() // 初始化机器人
+     console.log("设置成功")
+      
+      })
+      
 }

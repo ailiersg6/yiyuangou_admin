@@ -103,19 +103,19 @@ export class queryClass {
 }
 
 let myQuery = new queryClass({
-    host: '184.168.123.91',
+    host: '127.0.0.1',
     user: 'root',
     database: 'ton',
-    password: "Jackluojie58@",
+    password: "199233",
     waitForConnections: true, //连接超额是否等待
     connectionLimit: 10, //一次创建的最大连接数
     queueLimit: 0 //可以等待的连接的个数
 })
 // let myQuery = new queryClass({
-//     host: '103.56.115.196',
+//     host: '154.38.114.133',
 //     user: 'ton',
 //     database: 'ton',
-//     password: "ZhBFKWyJA52Wm2Hj",
+//     password: "Rdjzm3EhsWLjtEyp",
 //     waitForConnections: true, //连接超额是否等待
 //     connectionLimit: 10, //一次创建的最大连接数
 //     queueLimit: 0 //可以等待的连接的个数

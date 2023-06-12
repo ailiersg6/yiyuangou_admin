@@ -16,7 +16,7 @@ export type MyContext = Context & ConversationFlavor;
 export type MyConversation = Conversation<MyContext>;
 
 
-let gropId: number = -916038823; // 群id
+let gropId: number = 0; // 群id
 
 // 创建一个简单的菜单。
 const menu = new Menu("my-menu-identifier")
@@ -31,6 +31,10 @@ export async function initBot() {
   try {
 
     console.log("BOT_TOKEN", global.env.BOT_TOKEN)
+    if(bot)
+    {
+      bot.stop();
+    }
     bot = new Bot(global.env.BOT_TOKEN!, {
       client: {
         timeoutSeconds: 60,
@@ -92,7 +96,7 @@ export async function initBot() {
 
       console.log("ctx.message.chat", ctx.message)
 
-      if (ctx.message.chat.type == "group") {
+      if (ctx.message.chat.type.indexOf("group") != -1) {
         // 消息来自组
         console.log("当前消息来自组", ctx.message.chat.id)
         gropId = ctx.message.chat.id

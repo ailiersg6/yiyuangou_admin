@@ -18,12 +18,12 @@
     "grammy": "^1.16.0",
     "mysql2": "^3.2.4",
     "ton": "^13.4.1",
-    "tonweb": "^0.0.60",
-    "ts-node": "^10.9.1"
+    "tonweb": "^0.0.60"
   },
   "devDependencies": {
     "@types/node": "^18.16.3",
     "fastify-cli": "^5.7.1",
+    "ts-node": "^10.9.1",
     "ts-node-dev": "^2.0.0",
     "typescript": "^5.0.4"
   }
