@@ -16,7 +16,7 @@ export type MyContext = Context & ConversationFlavor;
 export type MyConversation = Conversation<MyContext>;
 
 
-let gropId: number = 0; // 群id
+
 
 // 创建一个简单的菜单。
 const menu = new Menu("my-menu-identifier")
@@ -25,17 +25,14 @@ const menu = new Menu("my-menu-identifier")
 
 
 
-let bot: Bot;
+
 
 export async function initBot() {
   try {
-
+   
     console.log("BOT_TOKEN", global.env.BOT_TOKEN)
-    if(bot)
-    {
-      bot.stop();
-    }
-    bot = new Bot(global.env.BOT_TOKEN!, {
+   
+    let bot: Bot  = new Bot(global.env.BOT_TOKEN!, {
       client: {
         timeoutSeconds: 60,
         sensitiveLogs: true
@@ -99,7 +96,7 @@ export async function initBot() {
       if (ctx.message.chat.type.indexOf("group") != -1) {
         // 消息来自组
         console.log("当前消息来自组", ctx.message.chat.id)
-        gropId = ctx.message.chat.id
+        // gropId = ctx.message.chat.id
         if (ctx.message["text"]) {
           const myRegex = /^[A-Z]\d{2}$/; // 匹配 A-Z 开头的 3 位字符串，第二三位为数字
           if (myRegex.test(ctx.message.text)) {
@@ -272,10 +269,10 @@ const markup = {
         sensitiveLogs: true
       }
     });
-    if (gropId == 0) {
-      console.log("发送不成功 群组id =", gropId)
+    if (!global.env.GROPID) {
+      console.log("发送不成功 群组id =", global.env.GROPID)
     } else {
-      await bot.api.sendMessage(gropId, msg,{ parse_mode: "HTML",reply_markup:markup })
+      await bot.api.sendMessage(global.env.GROPID, msg,{ parse_mode: "HTML",reply_markup:markup })
       return new Date()
     }
 
@@ -334,10 +331,10 @@ const markup = {
   ]
 };
 
-    if (gropId == 0) {
-      console.log("发送不成功 群组id =", gropId)
+    if (!global.env.GROPID) {
+      console.log("发送不成功 群组id =", global.env.GROPID)
     } else {
-      await bot.api.sendMessage(gropId, msg,{ parse_mode: "HTML",reply_markup:markup })
+      await bot.api.sendMessage(global.env.GROPID, msg,{ parse_mode: "HTML",reply_markup:markup })
       return new Date()
     }
 
@@ -428,10 +425,10 @@ ${endMsg}
     };
 
 
-    if (gropId == 0) {
-      console.log("发送不成功 群组id =", gropId)
+    if (!global.env.GROPID) {
+      console.log("发送不成功 群组id =", global.env.GROPID)
     } else {
-      await bot.api.sendMessage(gropId, msg,{ parse_mode: "HTML",reply_markup: markup })
+      await bot.api.sendMessage(global.env.GROPID, msg,{ parse_mode: "HTML",reply_markup: markup })
       
       return new Date()
     }

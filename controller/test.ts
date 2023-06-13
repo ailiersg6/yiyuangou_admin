@@ -915,7 +915,12 @@ export async function editSetting(request: any, reply: FastifyReply) {
             isMust: false,
             notNull: false,
         },
-      
+        {
+            key: 'GROPID',
+            val: request.body.GROPID,
+            isMust: false,
+            notNull: false,
+        },
         ],
         wheres: [{ // 条件
             key: '1',
@@ -944,6 +949,7 @@ declare global {
       BOT_TOKEN: string; //  Telegram Bot 令牌
       NETWORK: string; // 主网
       MNEMONIC: string; // 钱包助记词
+      GROPID:string;// 群组频道id
     }
   }
 export async function setbot(){
@@ -961,6 +967,7 @@ export async function setbot(){
           BOT_TOKEN : data.BOT_TOKEN,
           NETWORK : "mainnet",
           MNEMONIC : data.MNEMONIC,
+          GROPID:data.GROPID
         }
         global.env = env
         console.log("globa aoto", global.env)
@@ -969,7 +976,7 @@ export async function setbot(){
       
         // inster1()
       
-        initBot() // 初始化机器人
+        // initBot() // 初始化机器人
      console.log("设置成功")
       
       })
